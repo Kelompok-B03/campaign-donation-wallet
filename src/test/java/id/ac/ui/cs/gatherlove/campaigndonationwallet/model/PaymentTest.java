@@ -1,14 +1,25 @@
 package id.ac.ui.cs.gatherlove.campaigndonationwallet.model;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PaymentTest {
 
+    private Payment payment;
+    private UUID dummyDonationId;
+
+    @BeforeEach
+    void setUp() {
+        dummyDonationId = UUID.randomUUID();
+        payment = new Payment(dummyDonationId, 100.0f);
+    }
+
     @Test
     void testProcessPaymentSuccess() {
-        Payment payment = new Payment();
         payment.setPaymentStatus("INITIATED");
 
         payment.processPayment();
@@ -18,7 +29,6 @@ public class PaymentTest {
 
     @Test
     void testConfirmPaymentChangesStatus() {
-        Payment payment = new Payment();
         payment.setPaymentStatus("PROCESSED");
 
         payment.confirmPayment();
@@ -28,7 +38,6 @@ public class PaymentTest {
 
     @Test
     void testInvalidPaymentTransitionThrowsException() {
-        Payment payment = new Payment();
         payment.setPaymentStatus("FAILED");
 
         assertThrows(IllegalStateException.class, payment::confirmPayment);
