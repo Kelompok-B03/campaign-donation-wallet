@@ -1,5 +1,9 @@
 package id.ac.ui.cs.gatherlove.campaigndonationwallet.controller;
 
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.command.CampaignCommandInvoker;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.command.CreateCampaignCommand;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.command.DeleteCampaignCommand;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.command.UpdateCampaignCommand;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Campaign;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.service.CampaignService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +26,11 @@ public class CampaignController {
     }
 
     @PostMapping
-    public Campaign createCampaign(@RequestBody Campaign campaign) {
-        return campaignService.create(campaign);
+    public void createCampaign(@RequestBody Campaign campaign) {
+        CreateCampaignCommand createCommand = new CreateCampaignCommand(campaignService, campaign);
+        CampaignCommandInvoker invoker = new CampaignCommandInvoker();
+        invoker.setCommand(createCommand);
+        invoker.run();
     }
 
     @GetMapping("/user/{userId}")
@@ -46,15 +53,25 @@ public class CampaignController {
         if (campaign == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Campaign not found");
         }
-        campaignService.delete(campaign);
+
+        DeleteCampaignCommand deleteCommand = new DeleteCampaignCommand(campaignService, campaign);
+        CampaignCommandInvoker invoker = new CampaignCommandInvoker();
+        invoker.setCommand(deleteCommand);
+        invoker.run();
     }
 
     @PutMapping("/{id}")
     public void updateCampaign(@PathVariable String id, @RequestBody Campaign campaign) {
-        if (campaignService.findById(id) == null) {
+        Campaign existing = campaignService.findById(id);
+        if (existing == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Campaign not found");
         }
-        campaign.setCampaignId(id);
-        campaignService.update(campaign);
+
+        campaign.setCampaignId(id); // pastikan pakai ID dari path
+
+        UpdateCampaignCommand updateCommand = new UpdateCampaignCommand(campaignService, campaign);
+        CampaignCommandInvoker invoker = new CampaignCommandInvoker();
+        invoker.setCommand(updateCommand);
+        invoker.run();
     }
 }
