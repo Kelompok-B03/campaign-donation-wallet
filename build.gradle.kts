@@ -9,6 +9,11 @@ plugins {
 group = "id.ac.ui.cs.gatherlove"
 version = "0.0.1-SNAPSHOT"
 
+val seleniumJavaVersion = "4.14.1"
+val seleniumJupiterVersion = "5.0.1"
+val webdrivermanagerVersion = "5.6.3"
+val junitJupiterVersion = "5.9.1"
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -26,8 +31,12 @@ repositories {
 }
 
 dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.postgresql:postgresql:42.7.2")
+    implementation("io.github.cdimascio:dotenv-java:3.0.0")
+    implementation("javax.annotation:javax.annotation-api:1.3.2")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
