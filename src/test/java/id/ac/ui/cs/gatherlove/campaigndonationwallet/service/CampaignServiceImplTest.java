@@ -13,13 +13,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import org.mockito.MockitoAnnotations;
 
-public class CampaignServiceTest {
+public class CampaignServiceImplTest {
 
     @Mock
     private CampaignRepository campaignRepository;
 
     @InjectMocks
-    private CampaignService campaignService;
+    private CampaignServiceImpl campaignService;
 
     private Campaign campaign;
 
