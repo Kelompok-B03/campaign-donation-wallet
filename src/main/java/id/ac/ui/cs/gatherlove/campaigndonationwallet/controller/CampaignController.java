@@ -71,20 +71,4 @@ public class CampaignController {
         invoker.setCommand(updateCommand);
         invoker.run();
     }
-
-    @PostMapping("/{id}/donate")
-    public void donateCampaign(@PathVariable String id, @RequestParam int amount) {
-        Campaign existing = campaignService.findById(id);
-        if (existing == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Campaign not found");
-        }
-
-        DonateCampaignCommand donateCommand = new DonateCampaignCommand(existing, amount);
-        CampaignCommandInvoker invoker = new CampaignCommandInvoker();
-        invoker.setCommand(donateCommand);
-        invoker.run();
-    }
-
-
-
 }
