@@ -26,6 +26,9 @@ public class Donation {
     @Transient
     private DonationState state;
 
+    @Column(name = "state_name")
+    private String stateName;
+
     public Donation(UUID userId, UUID campaignId, Float amount, String message) {
         if (userId == null || campaignId == null) throw new NullPointerException("User ID and Campaign ID must not be null");
         if (amount == null || amount <= 0) throw new IllegalArgumentException("Amount must be positive");
@@ -42,11 +45,8 @@ public class Donation {
 
     public void setState(DonationState state) {
         this.state = state;
+        this.stateName = state.getName();
         state.setContext(this);
-    }
-
-    public String getStateName() {
-        return state.getName();
     }
 
     public void updateStatus() {
