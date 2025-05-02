@@ -1,9 +1,6 @@
 package id.ac.ui.cs.gatherlove.campaigndonationwallet.controller;
 
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.command.CampaignCommandInvoker;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.command.CreateCampaignCommand;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.command.DeleteCampaignCommand;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.command.UpdateCampaignCommand;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.command.*;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Campaign;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.service.CampaignService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,4 +71,20 @@ public class CampaignController {
         invoker.setCommand(updateCommand);
         invoker.run();
     }
+
+    @PostMapping("/{id}/donate")
+    public void donateCampaign(@PathVariable String id, @RequestParam int amount) {
+        Campaign existing = campaignService.findById(id);
+        if (existing == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Campaign not found");
+        }
+
+        DonateCampaignCommand donateCommand = new DonateCampaignCommand(existing, amount);
+        CampaignCommandInvoker invoker = new CampaignCommandInvoker();
+        invoker.setCommand(donateCommand);
+        invoker.run();
+    }
+
+
+
 }
