@@ -26,8 +26,6 @@ public class Donation {
     @Transient
     private DonationState state;
 
-    private String stateName;
-
     public Donation(UUID userId, UUID campaignId, Float amount, String message) {
         if (userId == null || campaignId == null) throw new NullPointerException("User ID and Campaign ID must not be null");
         if (amount == null || amount <= 0) throw new IllegalArgumentException("Amount must be positive");
@@ -44,20 +42,11 @@ public class Donation {
 
     public void setState(DonationState state) {
         this.state = state;
-        this.stateName = state.getName();
         state.setContext(this);
     }
 
-    public DonationState getState() {
-        if (state == null) {
-            switch (stateName) {
-                case "Pending" -> setState(new PendingState());
-                case "Finished" -> setState(new FinishedState());
-                case "Cancelled" -> setState(new CancelledState());
-                default -> throw new IllegalStateException("Unknown state: " + stateName);
-            }
-        }
-        return state;
+    public String getStateName() {
+        return state.getName();
     }
 
     public void updateStatus() {
