@@ -38,15 +38,12 @@ class DonationRepositoryTest {
 
     @Test
     void testFindByDonationId() {
-        List<Donation> expectedDonations = new ArrayList<>();
-        expectedDonations.add(donation);
+        when(donationRepository.findByDonationId(donation.getDonationId())).thenReturn(donation);
 
-        when(donationRepository.findByDonationId(donation.getDonationId())).thenReturn(expectedDonations);
+        Donation results = donationRepository.findByDonationId(donation.getDonationId());
 
-        List<Donation> results = donationRepository.findByDonationId(donation.getDonationId());
-
-        assertFalse(results.isEmpty());
-        assertInstanceOf(UUID.class, results.getFirst().getDonationId());
+        assertEquals(donation, results);
+        assertInstanceOf(UUID.class, results.getDonationId());
         verify(donationRepository, times(1)).findByDonationId(donation.getDonationId());
     }
 
