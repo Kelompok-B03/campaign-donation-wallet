@@ -49,10 +49,6 @@ public class Donation {
         state.setContext(this);
     }
 
-    public void updateStatus() {
-        getState().updateStatus();
-    }
-
     public void cancel() {
         getState().cancel();
     }

@@ -50,10 +50,10 @@ public class DonationTest {
     }
 
     @Test
-    void testUpdateStatusFromPendingToFinished() {
+    void testUpdateStateFromPendingToFinished() {
         Donation donation = new Donation(userId, campaignId, 250f, null);
 
-        donation.updateStatus();
+        donation.setState(new FinishedState());
 
         assertTrue(donation.getState() instanceof FinishedState);
     }

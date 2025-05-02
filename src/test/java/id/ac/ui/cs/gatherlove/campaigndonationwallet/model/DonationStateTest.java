@@ -27,7 +27,7 @@ public class DonationStateTest {
         Donation donation = new Donation();
         donation.setState(new PendingState());
 
-        donation.updateStatus();
+        donation.getState().updateStatus();
 
         assertTrue(donation.getState() instanceof FinishedState); // Assuming state transition
     }
