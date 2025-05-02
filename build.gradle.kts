@@ -31,7 +31,8 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation("org.springframework.data:spring-data-jpa")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.postgresql:postgresql:42.7.2")
@@ -43,6 +44,10 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation("jakarta.validation:jakarta.validation-api:3.0.2")
+    implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
+    testImplementation("com.h2database:h2")
+    testImplementation("org.assertj:assertj-core:3.24.2")
 }
 
 tasks.test {
