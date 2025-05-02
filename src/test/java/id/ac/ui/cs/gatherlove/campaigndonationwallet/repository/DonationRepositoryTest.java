@@ -37,6 +37,20 @@ class DonationRepositoryTest {
     }
 
     @Test
+    void testFindByDonationId() {
+        List<Donation> expectedDonations = new ArrayList<>();
+        expectedDonations.add(donation);
+
+        when(donationRepository.findByDonationId(donation.getDonationId())).thenReturn(expectedDonations);
+
+        List<Donation> results = donationRepository.findByDonationId(donation.getDonationId());
+
+        assertFalse(results.isEmpty());
+        assertInstanceOf(UUID.class, results.getFirst().getDonationId());
+        verify(donationRepository, times(1)).findByDonationId(donation.getDonationId());
+    }
+
+    @Test
     void testFindByUserId() {
         List<Donation> expectedDonations = new ArrayList<>();
         expectedDonations.add(donation);

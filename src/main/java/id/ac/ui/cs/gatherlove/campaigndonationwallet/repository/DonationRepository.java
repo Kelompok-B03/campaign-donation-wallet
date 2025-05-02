@@ -12,6 +12,8 @@ public interface DonationRepository extends JpaRepository<Donation, UUID> {
 
     // Skeleton methods (to be implemented/customized later)
 
+    List<Donation> findByDonationId(UUID donationId);
+
     List<Donation> findByUserId(UUID userId);
 
     List<Donation> findByCampaignId(UUID campaignId);
