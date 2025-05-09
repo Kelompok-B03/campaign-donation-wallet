@@ -15,6 +15,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -22,6 +24,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 
 @WebMvcTest(DonationController.class)
 class DonationControllerTest {
@@ -40,6 +43,8 @@ class DonationControllerTest {
     private UUID donationId;
     private Donation testDonation;
     private DonationRequest donationRequest;
+    private List<Donation> userDonations;
+    private List<Donation> campaignDonations;
 
     @BeforeEach
     void setUp() {
@@ -50,6 +55,15 @@ class DonationControllerTest {
         // Set up test donation
         testDonation = new Donation(userId, campaignId, 100.0f, "Test donation");
         testDonation.setDonationId(donationId);
+
+        // Create test donations for lists
+        Donation donation1 = new Donation(userId, UUID.randomUUID(), 50.0f, "First donation");
+        Donation donation2 = new Donation(userId, UUID.randomUUID(), 75.0f, "Second donation");
+        userDonations = Arrays.asList(donation1, donation2, testDonation);
+
+        Donation donation3 = new Donation(UUID.randomUUID(), campaignId, 120.0f, "Third donation");
+        Donation donation4 = new Donation(UUID.randomUUID(), campaignId, 85.0f, "Fourth donation");
+        campaignDonations = Arrays.asList(donation3, donation4, testDonation);
 
         // Set up donation request
         donationRequest = new DonationRequest();
@@ -106,7 +120,7 @@ class DonationControllerTest {
         // Setup updated donation with Finished state
         Donation updatedDonation = new Donation(userId, campaignId, 100.0f, "Test donation");
         updatedDonation.setDonationId(donationId);
-        updatedDonation.setState(new FinishedState()); // State will be updated to Finished in service
+        updatedDonation.setState(new FinishedState());
 
         when(donationService.updateStatus(donationId)).thenReturn(updatedDonation);
 
@@ -123,7 +137,7 @@ class DonationControllerTest {
         // Setup cancelled donation
         Donation cancelledDonation = new Donation(userId, campaignId, 100.0f, "Test donation");
         cancelledDonation.setDonationId(donationId);
-        cancelledDonation.setState(new CancelledState()); // State will be updated to Cancelled in service
+        cancelledDonation.setState(new CancelledState());
         cancelledDonation.setStateName("Cancelled");
 
         when(donationService.cancelDonation(donationId)).thenReturn(cancelledDonation);
@@ -168,5 +182,60 @@ class DonationControllerTest {
         mockMvc.perform(delete("/api/donations/{donationId}", nonExistentId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Donation not found"));
+    }
+
+    @Test
+    void testGetDonationById() throws Exception {
+        when(donationService.getDonationById(donationId)).thenReturn(testDonation);
+
+        mockMvc.perform(get("/api/donations/{donationId}", donationId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.donationId").value(donationId.toString()))
+                .andExpect(jsonPath("$.userId").value(userId.toString()))
+                .andExpect(jsonPath("$.campaignId").value(campaignId.toString()))
+                .andExpect(jsonPath("$.amount").value(100.0))
+                .andExpect(jsonPath("$.message").value("Test donation"));
+
+        verify(donationService).getDonationById(donationId);
+    }
+
+    @Test
+    void testGetDonationByIdNotFound() throws Exception {
+        when(donationService.getDonationById(donationId))
+                .thenThrow(new IllegalArgumentException("Donation with ID " + donationId + " not found"));
+
+        mockMvc.perform(get("/api/donations/{donationId}", donationId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Donation with ID " + donationId + " not found"));
+
+        verify(donationService).getDonationById(donationId);
+    }
+
+    @Test
+    void testGetDonationsByUserId() throws Exception {
+        when(donationService.getDonationsByUserId(userId)).thenReturn(userDonations);
+
+        mockMvc.perform(get("/api/donations/user/{userId}", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[2].donationId").value(donationId.toString()))
+                .andExpect(jsonPath("$[2].userId").value(userId.toString()))
+                .andExpect(jsonPath("$[2].campaignId").value(campaignId.toString()));
+
+        verify(donationService).getDonationsByUserId(userId);
+    }
+
+    @Test
+    void testGetDonationsByCampaignId() throws Exception {
+        when(donationService.getDonationsByCampaignId(campaignId)).thenReturn(campaignDonations);
+
+        mockMvc.perform(get("/api/donations/campaign/{campaignId}", campaignId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[2].donationId").value(donationId.toString()))
+                .andExpect(jsonPath("$[2].userId").value(userId.toString()))
+                .andExpect(jsonPath("$[2].campaignId").value(campaignId.toString()));
+
+        verify(donationService).getDonationsByCampaignId(campaignId);
     }
 }
