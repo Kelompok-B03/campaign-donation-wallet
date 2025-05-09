@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/donations")
@@ -75,6 +76,38 @@ public class DonationController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (IllegalArgumentException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return createErrorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/{donationId}")
+    public ResponseEntity<?> getDonationById(@PathVariable UUID donationId) {
+        try {
+            Donation donation = donationService.getDonationById(donationId);
+            return new ResponseEntity<>(donation, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return createErrorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getDonationsByUserId(@PathVariable UUID userId) {
+        try {
+            List<Donation> donations = donationService.getDonationsByUserId(userId);
+            return new ResponseEntity<>(donations, HttpStatus.OK);
+        } catch (Exception e) {
+            return createErrorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/campaign/{campaignId}")
+    public ResponseEntity<?> getDonationsByCampaignId(@PathVariable UUID campaignId) {
+        try {
+            List<Donation> donations = donationService.getDonationsByCampaignId(campaignId);
+            return new ResponseEntity<>(donations, HttpStatus.OK);
         } catch (Exception e) {
             return createErrorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }

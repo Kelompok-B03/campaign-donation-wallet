@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
+import java.util.List;
 
 @Service
 public class DonationServiceImpl implements DonationService {
@@ -57,6 +58,28 @@ public class DonationServiceImpl implements DonationService {
     public void deleteDonation(UUID donationId) {
         Donation donation = findDonationById(donationId);
         donationRepository.delete(donation);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Donation getDonationById(UUID donationId) {
+        Donation donation = donationRepository.findByDonationId(donationId);
+        if (donation == null) {
+            throw new IllegalArgumentException("Donation with ID " + donationId + " not found");
+        }
+        return donation;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Donation> getDonationsByUserId(UUID userId) {
+        return donationRepository.findByUserId(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Donation> getDonationsByCampaignId(UUID campaignId) {
+        return donationRepository.findByCampaignId(campaignId);
     }
 
     // Helper 'find-by-Id' method
