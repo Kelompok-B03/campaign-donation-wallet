@@ -26,7 +26,6 @@ public class Donation {
     @Transient
     private DonationState state;
 
-    @Column(name = "state_name")
     private String stateName;
 
     public Donation(UUID userId, UUID campaignId, Float amount, String message) {
@@ -43,10 +42,31 @@ public class Donation {
         this.setState(new PendingState());
     }
 
+    @PostLoad
+    private void postLoad() {
+        initializeState();
+    }
+
     public void setState(DonationState state) {
         this.state = state;
         this.stateName = state.getName();
         state.setContext(this);
+    }
+
+    public void initializeState() {
+        switch (stateName) {
+            case "Pending":
+                setState(new PendingState());
+                break;
+            case "Finished":
+                setState(new FinishedState());
+                break;
+            case "Cancelled":
+                setState(new CancelledState());
+                break;
+            default:
+                throw new IllegalStateException("Unknown state: " + stateName);
+        }
     }
 
     public void cancel() {
