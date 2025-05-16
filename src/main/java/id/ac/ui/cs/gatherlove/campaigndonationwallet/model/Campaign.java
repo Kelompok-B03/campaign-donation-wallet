@@ -15,7 +15,6 @@ public class Campaign {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID) // atau IDENTITY jika kamu pakai Long
     private String campaignId;
-
     private String title;
     private String description;
     private int targetAmount;
