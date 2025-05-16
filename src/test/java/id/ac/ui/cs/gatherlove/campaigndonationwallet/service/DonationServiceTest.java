@@ -9,10 +9,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.http.ResponseEntity;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -22,6 +28,25 @@ class DonationServiceTest {
 
     @Mock
     private DonationRepository donationRepository;
+
+    @Mock
+    private WebClient webClient;
+
+    @Mock
+    private WebClient.RequestBodyUriSpec requestBodyUriSpec;
+
+    @Mock
+    private WebClient.RequestBodySpec requestBodySpec;
+
+    @Mock
+    @SuppressWarnings("rawtypes")
+    private WebClient.RequestHeadersSpec requestHeadersSpec;
+
+    @Mock
+    private WebClient.ResponseSpec onStatusResponseSpec;
+
+    @Mock
+    private WebClient.ResponseSpec responseSpec;
 
     @InjectMocks
     private DonationServiceImpl donationService;
@@ -46,7 +71,18 @@ class DonationServiceTest {
         Float amount = 100.0f;
         String message = "Test donation";
 
-        when(donationRepository.save(any(Donation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        // Setup WebClient mock chain
+        when(webClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri("/api/donate")).thenReturn(requestBodySpec);
+        when(requestBodySpec.bodyValue(any(Map.class))).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(Predicate.class), any(Function.class)))
+                .thenReturn(onStatusResponseSpec);
+        when(onStatusResponseSpec.toEntity(String.class))
+                .thenReturn(Mono.just(ResponseEntity.ok("Success")));
+
+        when(donationRepository.save(any(Donation.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         Donation result = donationService.createDonation(userId, campaignId, amount, message);
 

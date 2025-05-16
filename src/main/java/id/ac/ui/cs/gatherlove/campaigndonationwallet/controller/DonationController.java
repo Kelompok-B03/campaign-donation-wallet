@@ -34,7 +34,7 @@ public class DonationController {
                     request.getMessage()
             );
             return new ResponseEntity<>(donation, HttpStatus.CREATED);
-        } catch (IllegalArgumentException | NullPointerException e) {
+        } catch (RuntimeException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return createErrorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);

@@ -5,26 +5,57 @@ import id.ac.ui.cs.gatherlove.campaigndonationwallet.repository.DonationReposito
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.http.ResponseEntity;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class DonationServiceImpl implements DonationService {
 
     private final DonationRepository donationRepository;
+    private final WebClient requestWebClient;  // Injected
 
     @Autowired
-    public DonationServiceImpl(DonationRepository donationRepository) {
+    public DonationServiceImpl(DonationRepository donationRepository, WebClient requestWebClient) {
         this.donationRepository = donationRepository;
+        this.requestWebClient = requestWebClient;
     }
 
     @Override
     @Transactional
     public Donation createDonation(UUID userId, UUID campaignId, Float amount, String message) {
-        Donation donation = new Donation(userId, campaignId, amount, message);
+        if (amount <= 0) throw new IllegalArgumentException("Amount must be positive");
 
-        return donationRepository.save(donation);
+        // Prepare the request body
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("userId", userId);
+        requestBody.put("campaignId", campaignId);
+        requestBody.put("amount", amount);
+        requestBody.put("description", message);
+
+        // Send request to payment
+        ResponseEntity<String> paymentResponse = requestWebClient.post()
+            .uri("/api/donate")
+            .bodyValue(requestBody)
+            .retrieve()
+            .onStatus(response -> response.isError(), clientResponse ->
+                clientResponse.bodyToMono(String.class)
+                .flatMap(errorMessage -> Mono.error(new RuntimeException("Error: " + errorMessage))))
+            .toEntity(String.class)
+            .block();
+
+        // Create donation if payment succeed
+        if (paymentResponse.getStatusCode().is2xxSuccessful()) {
+            Donation donation = new Donation(userId, campaignId, amount, message);
+            return donationRepository.save(donation);
+        } else {
+            throw new RuntimeException("Failed to create donation. HTTP Status: " + paymentResponse.getStatusCode());
+        }
     }
 
     @Override
