@@ -1,5 +1,8 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.model;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model;
 
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.FinishedState;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.PendingState;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

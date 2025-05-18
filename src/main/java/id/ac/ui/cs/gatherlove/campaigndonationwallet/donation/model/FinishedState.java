@@ -1,4 +1,4 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.model;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model;
 
 public class FinishedState implements DonationState {
 

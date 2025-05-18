@@ -1,7 +1,7 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.service;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service;
 
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.*;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.repository.DonationRepository;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.repository.DonationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

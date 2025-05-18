@@ -1,11 +1,11 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.service;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service;
 
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Donation;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.repository.DonationRepository;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.repository.DonationRepository;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service.DonationServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;

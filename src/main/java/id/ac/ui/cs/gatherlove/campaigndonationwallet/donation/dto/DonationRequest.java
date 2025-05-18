@@ -1,4 +1,4 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.dto;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

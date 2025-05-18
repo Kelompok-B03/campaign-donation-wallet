@@ -1,4 +1,4 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.model;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

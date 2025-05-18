@@ -1,7 +1,8 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.repository;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.repository;
 
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Donation;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.PendingState;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.PendingState;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.repository.DonationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

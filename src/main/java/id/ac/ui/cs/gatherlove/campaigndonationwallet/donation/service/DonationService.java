@@ -1,6 +1,6 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.service;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service;
 
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Donation;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
 
 import java.util.UUID;
 import java.util.List;

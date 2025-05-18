@@ -1,5 +1,6 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.model;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model;
 
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Payment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

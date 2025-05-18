@@ -1,11 +1,12 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.controller;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.dto.DonationRequest;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.CancelledState;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Donation;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.FinishedState;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.service.DonationService;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.controller.DonationController;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.dto.DonationRequest;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.CancelledState;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.FinishedState;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service.DonationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

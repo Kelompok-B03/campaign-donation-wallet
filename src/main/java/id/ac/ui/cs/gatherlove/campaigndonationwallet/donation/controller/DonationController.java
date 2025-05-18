@@ -1,8 +1,8 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.controller;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.controller;
 
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.dto.DonationRequest;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Donation;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.service.DonationService;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.dto.DonationRequest;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service.DonationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
