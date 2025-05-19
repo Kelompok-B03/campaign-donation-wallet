@@ -135,8 +135,7 @@ public class WalletServiceImpl implements WalletService {
         if (transaction.getType() != TransactionType.TOP_UP) {
             throw new TransactionNotAllowedException("Only TOP_UP transactions can be deleted");
         }
-        
-        // Adjust wallet balance
+
         wallet.setBalance(wallet.getBalance().subtract(transaction.getAmount()));
         
         if (wallet.getBalance().compareTo(BigDecimal.ZERO) < 0) {
@@ -144,8 +143,7 @@ public class WalletServiceImpl implements WalletService {
         }
         
         walletRepository.save(wallet);
-        
-        // Soft delete the transaction
+
         int updated = transactionRepository.softDeleteTransaction(transactionId, wallet.getId(), TransactionType.TOP_UP);
         
         return updated > 0;
@@ -155,15 +153,13 @@ public class WalletServiceImpl implements WalletService {
     @Transactional
     public TransactionDTO withdrawCampaignFunds(Long userId, Long campaignId, BigDecimal amount) {
         Wallet wallet = getWalletByUserId(userId);
-        
-        // Check if already withdrawn - this is still a wallet concern
+
         boolean alreadyWithdrawn = transactionRepository.existsByCampaignIdAndTypeAndDeletedFalse(
                 campaignId, TransactionType.WITHDRAWAL);
         if (alreadyWithdrawn) {
             throw new TransactionNotAllowedException("Funds from this campaign have already been withdrawn");
         }
-        
-        // Create withdrawal transaction
+
         Transaction transaction = Transaction.builder()
                 .walletId(wallet.getId())
                 .campaignId(campaignId)
@@ -173,12 +169,10 @@ public class WalletServiceImpl implements WalletService {
                 .timestamp(LocalDateTime.now())
                 .deleted(false)
                 .build();
-        
-        // Update wallet balance
+
         wallet.setBalance(wallet.getBalance().add(amount));
         walletRepository.save(wallet);
-        
-        // Save transaction
+
         Transaction savedTransaction = transactionRepository.save(transaction);
         
         return mapToTransactionDTO(savedTransaction);
@@ -189,12 +183,10 @@ public class WalletServiceImpl implements WalletService {
     public TransactionDTO recordDonation(Long userId, Long campaignId, BigDecimal amount, String description) {
         Wallet wallet = getWalletByUserId(userId);
         
-        // Check if sufficient balance
         if (wallet.getBalance().compareTo(amount) < 0) {
             throw new InsufficientBalanceException("Insufficient balance to make donation");
         }
-        
-        // Create donation transaction
+
         Transaction transaction = Transaction.builder()
                 .walletId(wallet.getId())
                 .campaignId(campaignId)
@@ -204,24 +196,20 @@ public class WalletServiceImpl implements WalletService {
                 .timestamp(LocalDateTime.now())
                 .deleted(false)
                 .build();
-        
-        // Update wallet balance
+
         wallet.setBalance(wallet.getBalance().subtract(amount));
         walletRepository.save(wallet);
-        
-        // Save transaction
+
         Transaction savedTransaction = transactionRepository.save(transaction);
         
         return mapToTransactionDTO(savedTransaction);
     }
-    
-    // Helper method to get wallet by user ID
+
     private Wallet getWalletByUserId(Long userId) {
         return walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Wallet not found for user: " + userId));
     }
-    
-    // Helper method to map Transaction to TransactionDTO
+
     private TransactionDTO mapToTransactionDTO(Transaction transaction) {
         return TransactionDTO.builder()
                 .id(transaction.getId())
