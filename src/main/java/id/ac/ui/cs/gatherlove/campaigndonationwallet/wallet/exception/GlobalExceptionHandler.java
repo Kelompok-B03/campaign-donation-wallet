@@ -36,7 +36,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // Error response class
     public static class ErrorResponse {
         private int status;
         private String message;
