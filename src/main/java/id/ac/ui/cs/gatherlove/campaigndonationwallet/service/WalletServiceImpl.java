@@ -11,6 +11,7 @@ import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Transaction.Transacti
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Wallet;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.repository.TransactionRepository;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.repository.WalletRepository;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.strategy.TopUpStrategyContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,7 @@ public class WalletServiceImpl implements WalletService {
     
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
+    private final TopUpStrategyContext topUpStrategyContext;
     
     @Override
     public WalletBalanceDTO getWalletBalance(Long userId) {
@@ -41,9 +43,10 @@ public class WalletServiceImpl implements WalletService {
     @Override
     @Transactional
     public TransactionDTO topUpWallet(TopUpRequestDTO request) {
+        topUpStrategyContext.executeTopUp(request);
+
         Wallet wallet = getWalletByUserId(request.getUserId());
-        
-        // Create transaction record
+
         Transaction transaction = Transaction.builder()
                 .walletId(wallet.getId())
                 .amount(request.getAmount())
@@ -54,14 +57,12 @@ public class WalletServiceImpl implements WalletService {
                 .timestamp(LocalDateTime.now())
                 .deleted(false)
                 .build();
-        
-        // Update wallet balance
+
         wallet.setBalance(wallet.getBalance().add(request.getAmount()));
         walletRepository.save(wallet);
-        
-        // Save transaction
+
         Transaction savedTransaction = transactionRepository.save(transaction);
-        
+
         return mapToTransactionDTO(savedTransaction);
     }
     

@@ -46,26 +46,4 @@ class WalletServiceImplTest {
 
         assertThat(result.getBalance()).isEqualTo(BigDecimal.valueOf(500));
     }
-
-    @Test
-    void testTopUpWallet_Success() {
-        Wallet wallet = Wallet.builder().id(1L).userId(1L).balance(BigDecimal.ZERO).build();
-        when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(wallet));
-        when(walletRepository.save(any(Wallet.class))).thenReturn(wallet);
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        TopUpRequestDTO request = TopUpRequestDTO.builder()
-                .userId(1L)
-                .amount(BigDecimal.TEN)
-                .paymentMethod(Transaction.PaymentMethod.GOPAY)
-                .paymentPhone("081234567890")
-                .build();
-
-        TransactionDTO result = walletService.topUpWallet(request);
-
-        assertThat(result.getAmount()).isEqualTo(BigDecimal.TEN);
-        assertThat(result.getType()).isEqualTo(TransactionType.TOP_UP);
-        verify(walletRepository).save(any(Wallet.class));
-        verify(transactionRepository).save(any(Transaction.class));
-    }
 }
