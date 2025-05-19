@@ -10,7 +10,6 @@ class TransactionTest {
 
     @Test
     void testTransactionCreation() {
-        // Arrange
         Long id = 1L;
         Long walletId = 100L;
         Long campaignId = 200L;
@@ -21,7 +20,6 @@ class TransactionTest {
         String description = "Donation to help children";
         LocalDateTime timestamp = LocalDateTime.now();
         
-        // Act
         Transaction transaction = Transaction.builder()
                 .id(id)
                 .walletId(walletId)
@@ -35,7 +33,6 @@ class TransactionTest {
                 .deleted(false)
                 .build();
         
-        // Assert
         assertEquals(id, transaction.getId());
         assertEquals(walletId, transaction.getWalletId());
         assertEquals(campaignId, transaction.getCampaignId());
@@ -50,7 +47,6 @@ class TransactionTest {
     
     @Test
     void testTransactionSettersAndGetters() {
-        // Arrange
         Transaction transaction = new Transaction();
         Long id = 1L;
         Long walletId = 100L;
@@ -62,7 +58,6 @@ class TransactionTest {
         String description = "Donation to help children";
         LocalDateTime timestamp = LocalDateTime.now();
         
-        // Act
         transaction.setId(id);
         transaction.setWalletId(walletId);
         transaction.setCampaignId(campaignId);
@@ -74,7 +69,6 @@ class TransactionTest {
         transaction.setTimestamp(timestamp);
         transaction.setDeleted(false);
         
-        // Assert
         assertEquals(id, transaction.getId());
         assertEquals(walletId, transaction.getWalletId());
         assertEquals(campaignId, transaction.getCampaignId());
@@ -89,19 +83,15 @@ class TransactionTest {
     
     @Test
     void testPrePersist() {
-        // Arrange
         Transaction transaction = new Transaction();
         
-        // Act
         transaction.onCreate();
         
-        // Assert
         assertNotNull(transaction.getTimestamp());
     }
     
     @Test
     void testTransactionTypeEnum() {
-        // Assert
         assertEquals(3, Transaction.TransactionType.values().length);
         assertEquals(Transaction.TransactionType.TOP_UP, Transaction.TransactionType.valueOf("TOP_UP"));
         assertEquals(Transaction.TransactionType.DONATION, Transaction.TransactionType.valueOf("DONATION"));
@@ -110,7 +100,6 @@ class TransactionTest {
     
     @Test
     void testPaymentMethodEnum() {
-        // Assert
         assertEquals(2, Transaction.PaymentMethod.values().length);
         assertEquals(Transaction.PaymentMethod.GOPAY, Transaction.PaymentMethod.valueOf("GOPAY"));
         assertEquals(Transaction.PaymentMethod.DANA, Transaction.PaymentMethod.valueOf("DANA"));
