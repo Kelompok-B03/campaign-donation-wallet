@@ -7,6 +7,7 @@ import id.ac.ui.cs.gatherlove.campaigndonationwallet.exception.InsufficientBalan
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.exception.ResourceNotFoundException;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.exception.TransactionNotAllowedException;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Transaction.TransactionType;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Wallet;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.service.WalletService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,12 @@ import java.util.Map;
 public class WalletController {
 
     private final WalletService walletService;
+
+    @PostMapping("/create")
+    public ResponseEntity<Long> createWallet(@RequestParam Long userId) {
+        Wallet wallet = walletService.createWallet(userId);
+        return ResponseEntity.ok(wallet.getId());
+    }
 
     @GetMapping("/balance/{userId}")
     public ResponseEntity<WalletBalanceDTO> getWalletBalance(@PathVariable Long userId) {
