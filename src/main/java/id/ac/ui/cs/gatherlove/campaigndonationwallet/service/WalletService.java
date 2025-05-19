@@ -4,6 +4,8 @@ import id.ac.ui.cs.gatherlove.campaigndonationwallet.dto.WalletDTOs.TopUpRequest
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.dto.WalletDTOs.TransactionDTO;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.dto.WalletDTOs.WalletBalanceDTO;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Transaction.TransactionType;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Wallet;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -12,6 +14,8 @@ import java.util.List;
 
 public interface WalletService {
     
+    Wallet createWallet(Long userId);
+
     // Get wallet balance by user ID
     WalletBalanceDTO getWalletBalance(Long userId);
     

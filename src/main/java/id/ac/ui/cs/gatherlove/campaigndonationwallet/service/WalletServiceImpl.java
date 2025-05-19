@@ -32,6 +32,20 @@ public class WalletServiceImpl implements WalletService {
     private final TopUpStrategyContext topUpStrategyContext;
     
     @Override
+    public Wallet createWallet(Long userId) {
+        if (walletRepository.findByUserId(userId).isPresent()) {
+            throw new IllegalArgumentException("Wallet already exists for user");
+        }
+
+        Wallet wallet = Wallet.builder()
+            .userId(userId)
+            .balance(BigDecimal.ZERO)
+            .build();
+
+        return walletRepository.save(wallet);
+    }
+
+    @Override
     public WalletBalanceDTO getWalletBalance(Long userId) {
         Wallet wallet = getWalletByUserId(userId);
         return WalletBalanceDTO.builder()
