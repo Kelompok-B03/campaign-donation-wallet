@@ -12,30 +12,24 @@ class WalletDTOsTest {
 
     @Test
     void testWalletBalanceDTO() {
-        // Arrange
         Long userId = 1L;
         BigDecimal balance = new BigDecimal("1000.00");
         
-        // Act - Builder
         WalletBalanceDTO dto = WalletBalanceDTO.builder()
                 .userId(userId)
                 .balance(balance)
                 .build();
         
-        // Assert
         assertEquals(userId, dto.getUserId());
         assertEquals(balance, dto.getBalance());
         
-        // Act - Setters
         WalletBalanceDTO dto2 = new WalletBalanceDTO();
         dto2.setUserId(2L);
         dto2.setBalance(new BigDecimal("2000.00"));
         
-        // Assert
         assertEquals(2L, dto2.getUserId());
         assertEquals(new BigDecimal("2000.00"), dto2.getBalance());
         
-        // Test All Args Constructor
         WalletBalanceDTO dto3 = new WalletBalanceDTO(3L, new BigDecimal("3000.00"));
         assertEquals(3L, dto3.getUserId());
         assertEquals(new BigDecimal("3000.00"), dto3.getBalance());
@@ -43,7 +37,6 @@ class WalletDTOsTest {
     
     @Test
     void testTransactionDTO() {
-        // Arrange
         Long id = 1L;
         Long walletId = 100L;
         Long campaignId = 200L;
@@ -54,7 +47,6 @@ class WalletDTOsTest {
         String description = "Test transaction";
         LocalDateTime timestamp = LocalDateTime.now();
         
-        // Act - Builder
         TransactionDTO dto = TransactionDTO.builder()
                 .id(id)
                 .walletId(walletId)
@@ -67,7 +59,6 @@ class WalletDTOsTest {
                 .timestamp(timestamp)
                 .build();
         
-        // Assert
         assertEquals(id, dto.getId());
         assertEquals(walletId, dto.getWalletId());
         assertEquals(campaignId, dto.getCampaignId());
@@ -78,7 +69,6 @@ class WalletDTOsTest {
         assertEquals(description, dto.getDescription());
         assertEquals(timestamp, dto.getTimestamp());
         
-        // Test setters and getters
         TransactionDTO dto2 = new TransactionDTO();
         dto2.setId(2L);
         dto2.setWalletId(201L);
@@ -103,13 +93,11 @@ class WalletDTOsTest {
     
     @Test
     void testTopUpRequestDTO() {
-        // Arrange
         Long userId = 1L;
         BigDecimal amount = new BigDecimal("500.00");
         PaymentMethod paymentMethod = PaymentMethod.GOPAY;
         String paymentPhone = "081234567890";
         
-        // Act - Builder
         TopUpRequestDTO dto = TopUpRequestDTO.builder()
                 .userId(userId)
                 .amount(amount)
@@ -117,13 +105,11 @@ class WalletDTOsTest {
                 .paymentPhone(paymentPhone)
                 .build();
         
-        // Assert
         assertEquals(userId, dto.getUserId());
         assertEquals(amount, dto.getAmount());
         assertEquals(paymentMethod, dto.getPaymentMethod());
         assertEquals(paymentPhone, dto.getPaymentPhone());
         
-        // Test setters and getters
         TopUpRequestDTO dto2 = new TopUpRequestDTO();
         dto2.setUserId(2L);
         dto2.setAmount(new BigDecimal("600.00"));
@@ -138,21 +124,17 @@ class WalletDTOsTest {
     
     @Test
     void testWithdrawalRequestDTO() {
-        // Arrange
         Long userId = 1L;
         Long campaignId = 100L;
         
-        // Act - Builder
         WithdrawalRequestDTO dto = WithdrawalRequestDTO.builder()
                 .userId(userId)
                 .campaignId(campaignId)
                 .build();
         
-        // Assert
         assertEquals(userId, dto.getUserId());
         assertEquals(campaignId, dto.getCampaignId());
         
-        // Test setters and getters
         WithdrawalRequestDTO dto2 = new WithdrawalRequestDTO();
         dto2.setUserId(2L);
         dto2.setCampaignId(200L);
