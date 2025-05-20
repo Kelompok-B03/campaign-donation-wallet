@@ -1,8 +1,8 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.controller;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.controller;
 
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.command.*;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Campaign;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.service.CampaignService;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.command.*;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model.Campaign;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.service.CampaignService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

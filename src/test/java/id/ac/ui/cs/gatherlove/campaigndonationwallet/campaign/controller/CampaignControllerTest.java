@@ -1,8 +1,8 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.controller;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Campaign;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.service.CampaignService;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model.Campaign;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.service.CampaignService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

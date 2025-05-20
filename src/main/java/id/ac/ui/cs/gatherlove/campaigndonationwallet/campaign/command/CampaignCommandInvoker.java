@@ -1,4 +1,4 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.command;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.command;
 
 public class CampaignCommandInvoker {
     private Command command;

@@ -1,6 +1,6 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.repository;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.repository;
 
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Campaign;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model.Campaign;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,7 +1,7 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.command;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.command;
 
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.model.Campaign;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.service.CampaignService;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model.Campaign;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.service.CampaignService;
 
 public class CreateCampaignCommand implements Command {
 

@@ -1,4 +1,4 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.controller;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

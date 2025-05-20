@@ -1,4 +1,4 @@
-package id.ac.ui.cs.gatherlove.campaigndonationwallet.model;
+package id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model;
 
 import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
