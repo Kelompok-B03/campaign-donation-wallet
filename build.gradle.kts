@@ -69,3 +69,8 @@ sonar {
         property("sonar.host.url", "https://sonarcloud.io")
     }
 }
+
+
+tasks.bootJar {
+    archiveFileName.set("campaign-donation-wallet.jar")
+}
