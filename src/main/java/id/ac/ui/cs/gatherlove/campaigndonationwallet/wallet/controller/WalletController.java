@@ -30,14 +30,14 @@ public class WalletController {
 
     private final WalletService walletService;
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<Long> createWallet(@RequestParam Long userId) {
         Wallet wallet = walletService.createWallet(userId);
         return ResponseEntity.ok(wallet.getId());
     }
 
-    @GetMapping("/balance/{userId}")
-    public ResponseEntity<WalletBalanceDTO> getWalletBalance(@PathVariable Long userId) {
+    @GetMapping("/balance")
+    public ResponseEntity<WalletBalanceDTO> getWalletBalance(@RequestParam Long userId) {
         try {
             WalletBalanceDTO balance = walletService.getWalletBalance(userId);
             return ResponseEntity.ok(balance);
@@ -46,7 +46,7 @@ public class WalletController {
         }
     }
 
-    @PostMapping("/topup")
+    @PostMapping("/top-ups")
     public ResponseEntity<TransactionDTO> topUpWallet(@Valid @RequestBody TopUpRequestDTO request) {
         try {
             TransactionDTO transaction = walletService.topUpWallet(request);
@@ -58,39 +58,26 @@ public class WalletController {
         }
     }
 
-    @GetMapping("/transactions/recent/{userId}")
-    public ResponseEntity<List<TransactionDTO>> getRecentTransactions(
-            @PathVariable Long userId,
-            @RequestParam(defaultValue = "5") int limit) {
-        try {
-            List<TransactionDTO> transactions = walletService.getRecentTransactions(userId, limit);
-            return ResponseEntity.ok(transactions);
-        } catch (ResourceNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
-    }
-
-    @GetMapping("/transactions/{userId}")
-    public ResponseEntity<Page<TransactionDTO>> getTransactionHistory(
-            @PathVariable Long userId,
+    @GetMapping("/transactions")
+    public ResponseEntity<?> getTransactions(
+            @RequestParam Long userId,
+            @RequestParam(required = false) String type,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Integer limit) {
         try {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<TransactionDTO> transactions = walletService.getTransactionHistory(userId, pageable);
-            return ResponseEntity.ok(transactions);
-        } catch (ResourceNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
-    }
-
-    @GetMapping("/transactions/{userId}/type/{type}")
-    public ResponseEntity<List<TransactionDTO>> getTransactionsByType(
-            @PathVariable Long userId,
-            @PathVariable TransactionType type) {
-        try {
-            List<TransactionDTO> transactions = walletService.getTransactionsByType(userId, type);
-            return ResponseEntity.ok(transactions);
+            if (limit != null) {
+                List<TransactionDTO> transactions = walletService.getRecentTransactions(userId, limit);
+                return ResponseEntity.ok(transactions);
+            } else if (type != null) {
+                TransactionType transactionType = TransactionType.valueOf(type.toUpperCase());
+                List<TransactionDTO> transactions = walletService.getTransactionsByType(userId, transactionType);
+                return ResponseEntity.ok(transactions);
+            } else {
+                Pageable pageable = PageRequest.of(page, size);
+                Page<TransactionDTO> transactions = walletService.getTransactionHistory(userId, pageable);
+                return ResponseEntity.ok(transactions);
+            }
         } catch (ResourceNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (IllegalArgumentException e) {
@@ -98,9 +85,9 @@ public class WalletController {
         }
     }
 
-    @DeleteMapping("/transactions/{userId}/{transactionId}")
+    @DeleteMapping("/transactions/{transactionId}")
     public ResponseEntity<Map<String, Boolean>> deleteTopUpTransaction(
-            @PathVariable Long userId,
+            @RequestParam Long userId,
             @PathVariable Long transactionId) {
         try {
             boolean deleted = walletService.deleteTopUpTransaction(userId, transactionId);
@@ -112,9 +99,9 @@ public class WalletController {
         }
     }
 
-    @PostMapping("/withdraw/{userId}/{campaignId}")
+    @PostMapping("/{campaignId}/withdrawals")
     public ResponseEntity<TransactionDTO> withdrawCampaignFunds(
-            @PathVariable Long userId,
+            @RequestParam Long userId,
             @PathVariable Long campaignId,
             @RequestBody Map<String, BigDecimal> withdrawalRequest) {
         try {
@@ -122,7 +109,7 @@ public class WalletController {
             if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Valid withdrawal amount is required");
             }
-            
+
             TransactionDTO transaction = walletService.withdrawCampaignFunds(userId, campaignId, amount);
             return ResponseEntity.status(HttpStatus.CREATED).body(transaction);
         } catch (ResourceNotFoundException e) {
@@ -131,21 +118,17 @@ public class WalletController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
-    
-    // This endpoint would be called by the Donation service, not directly by users
-    @PostMapping("/donate")
-    public ResponseEntity<TransactionDTO> recordDonation(
-            @RequestBody Map<String, Object> donationRequest) {
+
+    @PostMapping("/donations")
+    public ResponseEntity<TransactionDTO> recordDonation(@RequestBody Map<String, Object> donationRequest) {
         try {
             Long userId = Long.valueOf(donationRequest.get("userId").toString());
             Long campaignId = Long.valueOf(donationRequest.get("campaignId").toString());
             BigDecimal amount = new BigDecimal(donationRequest.get("amount").toString());
             String description = (String) donationRequest.get("description");
-            
             if (amount.compareTo(BigDecimal.ZERO) <= 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Donation amount must be positive");
             }
-            
             TransactionDTO transaction = walletService.recordDonation(userId, campaignId, amount, description);
             return ResponseEntity.status(HttpStatus.CREATED).body(transaction);
         } catch (ResourceNotFoundException e) {
