@@ -31,25 +31,40 @@ repositories {
 }
 
 dependencies {
-	implementation("org.springframework.data:spring-data-jpa")
+	// Spring Boot Starters
+    implementation("org.springframework.data:spring-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+    // Database
     implementation("org.postgresql:postgresql:42.7.2")
+
+    // Utilities
     implementation("io.github.cdimascio:dotenv-java:3.0.0")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+    // Lombok
     compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+
+    // Dev tools
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    annotationProcessor("org.projectlombok:lombok")
+
+    // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("jakarta.validation:jakarta.validation-api:3.0.2")
     implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
     testImplementation("com.h2database:h2")
     testImplementation("org.assertj:assertj-core:3.24.2")
-    implementation("org.springframework.boot:spring-boot-starter-security")
+
+    // JJwt
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
