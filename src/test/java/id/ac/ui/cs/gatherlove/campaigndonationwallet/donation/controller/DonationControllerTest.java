@@ -1,6 +1,9 @@
 package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.controller.CampaignControllerTest;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.service.CampaignService;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.controller.DonationController;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.dto.DonationRequest;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.CancelledState;
@@ -10,8 +13,12 @@ import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service.DonationSe
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,7 +35,17 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 
 @WebMvcTest(DonationController.class)
+@Import(DonationControllerTest.MockServiceConfig.class)
+@AutoConfigureMockMvc(addFilters = false)
 class DonationControllerTest {
+
+    @TestConfiguration
+    static class MockServiceConfig {
+        @Bean
+        public DonationService donationService() {
+            return mock(DonationService.class);
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;

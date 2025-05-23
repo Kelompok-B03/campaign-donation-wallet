@@ -5,6 +5,7 @@ import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model.Campaign;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.service.CampaignService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -17,12 +18,14 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CampaignController.class)
 @Import(CampaignControllerTest.MockServiceConfig.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class CampaignControllerTest {
 
     @Autowired
