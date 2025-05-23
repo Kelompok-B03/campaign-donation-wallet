@@ -23,4 +23,5 @@ public class Campaign {
     private LocalDate endDate;
     private String fundraiserId;
     private String status;
+    private Boolean withdrawed;
 }
