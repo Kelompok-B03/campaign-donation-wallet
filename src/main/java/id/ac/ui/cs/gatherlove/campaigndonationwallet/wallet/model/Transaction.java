@@ -24,7 +24,7 @@ public class Transaction {
     private Long walletId;
     
     @Column(name = "campaign_id")
-    private Long campaignId; // Nullable, used for donations and withdrawals
+    private String campaignId;
     
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;

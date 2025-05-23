@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,7 +33,7 @@ public class WalletServiceImpl implements WalletService {
     private final TopUpStrategyContext topUpStrategyContext;
     
     @Override
-    public Wallet createWallet(Long userId) {
+    public Wallet createWallet(UUID userId) {
         if (walletRepository.findByUserId(userId).isPresent()) {
             throw new IllegalArgumentException("Wallet already exists for user");
         }
@@ -46,7 +47,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public WalletBalanceDTO getWalletBalance(Long userId) {
+    public WalletBalanceDTO getWalletBalance(UUID userId) {
         Wallet wallet = getWalletByUserId(userId);
         return WalletBalanceDTO.builder()
                 .userId(userId)
@@ -81,7 +82,7 @@ public class WalletServiceImpl implements WalletService {
     }
     
     @Override
-    public List<TransactionDTO> getRecentTransactions(Long userId, int limit) {
+    public List<TransactionDTO> getRecentTransactions(UUID userId, int limit) {
         Wallet wallet = getWalletByUserId(userId);
         
         List<Transaction> transactions;
@@ -103,7 +104,7 @@ public class WalletServiceImpl implements WalletService {
     }
     
     @Override
-    public Page<TransactionDTO> getTransactionHistory(Long userId, Pageable pageable) {
+    public Page<TransactionDTO> getTransactionHistory(UUID userId, Pageable pageable) {
         Wallet wallet = getWalletByUserId(userId);
         
         Page<Transaction> transactions = transactionRepository.findByWalletIdAndDeletedFalseOrderByTimestampDesc(
@@ -113,7 +114,7 @@ public class WalletServiceImpl implements WalletService {
     }
     
     @Override
-    public List<TransactionDTO> getTransactionsByType(Long userId, TransactionType type) {
+    public List<TransactionDTO> getTransactionsByType(UUID userId, TransactionType type) {
         Wallet wallet = getWalletByUserId(userId);
         
         List<Transaction> transactions = transactionRepository.findByWalletIdAndTypeAndDeletedFalseOrderByTimestampDesc(
@@ -126,7 +127,7 @@ public class WalletServiceImpl implements WalletService {
     
     @Override
     @Transactional
-    public boolean deleteTopUpTransaction(Long userId, Long transactionId) {
+    public boolean deleteTopUpTransaction(UUID userId, Long transactionId) {
         Wallet wallet = getWalletByUserId(userId);
         
         Transaction transaction = transactionRepository.findByIdAndWalletIdAndDeletedFalse(transactionId, wallet.getId())
@@ -151,7 +152,7 @@ public class WalletServiceImpl implements WalletService {
     
     @Override
     @Transactional
-    public TransactionDTO withdrawCampaignFunds(Long userId, Long campaignId, BigDecimal amount) {
+    public TransactionDTO withdrawCampaignFunds(UUID userId, String campaignId, BigDecimal amount) {
         Wallet wallet = getWalletByUserId(userId);
 
         boolean alreadyWithdrawn = transactionRepository.existsByCampaignIdAndTypeAndDeletedFalse(
@@ -180,7 +181,7 @@ public class WalletServiceImpl implements WalletService {
     
     @Override
     @Transactional
-    public TransactionDTO recordDonation(Long userId, Long campaignId, BigDecimal amount, String description) {
+    public TransactionDTO recordDonation(UUID userId, String campaignId, BigDecimal amount, String description) {
         Wallet wallet = getWalletByUserId(userId);
         
         if (wallet.getBalance().compareTo(amount) < 0) {
@@ -205,7 +206,7 @@ public class WalletServiceImpl implements WalletService {
         return mapToTransactionDTO(savedTransaction);
     }
 
-    private Wallet getWalletByUserId(Long userId) {
+    private Wallet getWalletByUserId(UUID userId) {
         return walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Wallet not found for user: " + userId));
     }

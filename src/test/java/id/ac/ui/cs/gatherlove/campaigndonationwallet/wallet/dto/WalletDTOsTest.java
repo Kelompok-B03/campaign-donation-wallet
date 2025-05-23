@@ -6,13 +6,15 @@ import id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.model.Transaction.Tr
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class WalletDTOsTest {
 
     @Test
     void testWalletBalanceDTO() {
-        Long userId = 1L;
+        UUID userId = UUID.randomUUID();
         BigDecimal balance = new BigDecimal("1000.00");
         
         WalletBalanceDTO dto = WalletBalanceDTO.builder()
@@ -24,14 +26,16 @@ class WalletDTOsTest {
         assertEquals(balance, dto.getBalance());
         
         WalletBalanceDTO dto2 = new WalletBalanceDTO();
-        dto2.setUserId(2L);
+        UUID userId2 = UUID.randomUUID();
+        dto2.setUserId(userId2);
         dto2.setBalance(new BigDecimal("2000.00"));
         
-        assertEquals(2L, dto2.getUserId());
+        assertEquals(userId2, dto2.getUserId());
         assertEquals(new BigDecimal("2000.00"), dto2.getBalance());
         
-        WalletBalanceDTO dto3 = new WalletBalanceDTO(3L, new BigDecimal("3000.00"));
-        assertEquals(3L, dto3.getUserId());
+        UUID userId3 = UUID.randomUUID();
+        WalletBalanceDTO dto3 = new WalletBalanceDTO(userId3, new BigDecimal("3000.00"));
+        assertEquals(userId3, dto3.getUserId());
         assertEquals(new BigDecimal("3000.00"), dto3.getBalance());
     }
     
@@ -39,7 +43,7 @@ class WalletDTOsTest {
     void testTransactionDTO() {
         Long id = 1L;
         Long walletId = 100L;
-        Long campaignId = 200L;
+        String campaignId = "campaign-200";
         BigDecimal amount = new BigDecimal("250.00");
         TransactionType type = TransactionType.DONATION;
         PaymentMethod paymentMethod = PaymentMethod.GOPAY;
@@ -72,7 +76,7 @@ class WalletDTOsTest {
         TransactionDTO dto2 = new TransactionDTO();
         dto2.setId(2L);
         dto2.setWalletId(201L);
-        dto2.setCampaignId(301L);
+        dto2.setCampaignId("campaign-301");
         dto2.setAmount(new BigDecimal("350.00"));
         dto2.setType(TransactionType.TOP_UP);
         dto2.setPaymentMethod(PaymentMethod.DANA);
@@ -82,7 +86,7 @@ class WalletDTOsTest {
         
         assertEquals(2L, dto2.getId());
         assertEquals(201L, dto2.getWalletId());
-        assertEquals(301L, dto2.getCampaignId());
+        assertEquals("campaign-301", dto2.getCampaignId());
         assertEquals(new BigDecimal("350.00"), dto2.getAmount());
         assertEquals(TransactionType.TOP_UP, dto2.getType());
         assertEquals(PaymentMethod.DANA, dto2.getPaymentMethod());
@@ -93,7 +97,7 @@ class WalletDTOsTest {
     
     @Test
     void testTopUpRequestDTO() {
-        Long userId = 1L;
+        UUID userId = UUID.randomUUID();
         BigDecimal amount = new BigDecimal("500.00");
         PaymentMethod paymentMethod = PaymentMethod.GOPAY;
         String paymentPhone = "081234567890";
@@ -111,12 +115,13 @@ class WalletDTOsTest {
         assertEquals(paymentPhone, dto.getPaymentPhone());
         
         TopUpRequestDTO dto2 = new TopUpRequestDTO();
-        dto2.setUserId(2L);
+        UUID userId2 = UUID.randomUUID();
+        dto2.setUserId(userId2);
         dto2.setAmount(new BigDecimal("600.00"));
         dto2.setPaymentMethod(PaymentMethod.DANA);
         dto2.setPaymentPhone("089876543210");
         
-        assertEquals(2L, dto2.getUserId());
+        assertEquals(userId2, dto2.getUserId());
         assertEquals(new BigDecimal("600.00"), dto2.getAmount());
         assertEquals(PaymentMethod.DANA, dto2.getPaymentMethod());
         assertEquals("089876543210", dto2.getPaymentPhone());
@@ -124,8 +129,8 @@ class WalletDTOsTest {
     
     @Test
     void testWithdrawalRequestDTO() {
-        Long userId = 1L;
-        Long campaignId = 100L;
+        UUID userId = UUID.randomUUID();
+        String campaignId = "campaign-100";
         
         WithdrawalRequestDTO dto = WithdrawalRequestDTO.builder()
                 .userId(userId)
@@ -136,10 +141,12 @@ class WalletDTOsTest {
         assertEquals(campaignId, dto.getCampaignId());
         
         WithdrawalRequestDTO dto2 = new WithdrawalRequestDTO();
-        dto2.setUserId(2L);
-        dto2.setCampaignId(200L);
+        UUID userId2 = UUID.randomUUID();
+        String campaignId2 = "campaign-200";
+        dto2.setUserId(userId2);
+        dto2.setCampaignId(campaignId2);
         
-        assertEquals(2L, dto2.getUserId());
-        assertEquals(200L, dto2.getCampaignId());
+        assertEquals(userId2, dto2.getUserId());
+        assertEquals(campaignId2, dto2.getCampaignId());
     }
 }

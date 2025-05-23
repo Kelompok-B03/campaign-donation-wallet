@@ -3,11 +3,14 @@ package id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model.Campaign;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.service.CampaignService;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service.DonationService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -24,25 +27,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CampaignController.class)
-@Import(CampaignControllerTest.MockServiceConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
 public class CampaignControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
+    @MockBean
     private CampaignService campaignService;
 
     private Campaign campaign;
-
-    @TestConfiguration
-    static class MockServiceConfig {
-        @Bean
-        public CampaignService campaignService() {
-            return mock(CampaignService.class);
-        }
-    }
 
     @BeforeEach
     public void setUp() {

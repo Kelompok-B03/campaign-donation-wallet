@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class WalletDTOs {
 
@@ -17,7 +18,7 @@ public class WalletDTOs {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class WalletBalanceDTO {
-        private Long userId;
+        private UUID userId;
         private BigDecimal balance;
     }
     
@@ -28,7 +29,7 @@ public class WalletDTOs {
     public static class TransactionDTO {
         private Long id;
         private Long walletId;
-        private Long campaignId;
+        private String campaignId;
         private BigDecimal amount;
         private TransactionType type;
         private PaymentMethod paymentMethod;
@@ -42,7 +43,7 @@ public class WalletDTOs {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class TopUpRequestDTO {
-        private Long userId;
+        private UUID userId;
         private BigDecimal amount;
         private PaymentMethod paymentMethod;
         private String paymentPhone;
@@ -53,7 +54,7 @@ public class WalletDTOs {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class WithdrawalRequestDTO {
-        private Long userId;
-        private Long campaignId;
+        private UUID userId;
+        private String campaignId;
     }
 }

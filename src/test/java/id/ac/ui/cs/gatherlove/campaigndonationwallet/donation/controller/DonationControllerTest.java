@@ -35,18 +35,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 
 @WebMvcTest(DonationController.class)
-@Import(DonationControllerTest.MockServiceConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
 class DonationControllerTest {
-
-    @TestConfiguration
-    static class MockServiceConfig {
-        @Bean
-        public DonationService donationService() {
-            return mock(DonationService.class);
-        }
-    }
-
     @Autowired
     private MockMvc mockMvc;
 
