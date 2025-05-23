@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.List;
 import java.util.Map;
@@ -28,14 +29,14 @@ public class DonationServiceImpl implements DonationService {
 
     @Override
     @Transactional
-    public Donation createDonation(UUID userId, UUID campaignId, Float amount, String message) {
+    public Donation createDonation(UUID userId, String campaignId, Float amount, String message) {
         if (amount <= 0) throw new IllegalArgumentException("Amount must be positive");
 
         // Prepare the request body
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("userId", userId);
         requestBody.put("campaignId", campaignId);
-        requestBody.put("amount", amount);
+        requestBody.put("amount", BigDecimal.valueOf((double) amount));
         requestBody.put("description", message);
 
         // Send request to payment
@@ -68,21 +69,21 @@ public class DonationServiceImpl implements DonationService {
         return donationRepository.save(donation);
     }
 
-    @Override
-    @Transactional
-    public Donation cancelDonation(UUID donationId) {
-        Donation donation = findDonationById(donationId);
-
-        try {
-            // Cancel donation if possible
-            donation.cancel();
-
-            return donationRepository.save(donation);
-        } catch (IllegalStateException e) {
-            // Rethrow the exception with additional context
-            throw new IllegalStateException("Cannot cancel donation with ID " + donationId + ": " + e.getMessage(), e);
-        }
-    }
+//    @Override
+//    @Transactional
+//    public Donation cancelDonation(UUID donationId) {
+//        Donation donation = findDonationById(donationId);
+//
+//        try {
+//            // Cancel donation if possible
+//            donation.cancel();
+//
+//            return donationRepository.save(donation);
+//        } catch (IllegalStateException e) {
+//            // Rethrow the exception with additional context
+//            throw new IllegalStateException("Cannot cancel donation with ID " + donationId + ": " + e.getMessage(), e);
+//        }
+//    }
 
     @Override
     @Transactional
@@ -109,7 +110,7 @@ public class DonationServiceImpl implements DonationService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Donation> getDonationsByCampaignId(UUID campaignId) {
+    public List<Donation> getDonationsByCampaignId(String campaignId) {
         return donationRepository.findByCampaignId(campaignId);
     }
 

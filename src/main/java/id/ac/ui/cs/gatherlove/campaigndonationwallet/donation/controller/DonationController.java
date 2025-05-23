@@ -55,19 +55,19 @@ public class DonationController {
         }
     }
 
-    @PutMapping("/{donationId}/cancel")
-    public ResponseEntity<?> cancelDonation(@PathVariable UUID donationId) {
-        try {
-            Donation donation = donationService.cancelDonation(donationId);
-            return new ResponseEntity<>(donation, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (IllegalStateException e) {
-            return createErrorResponse(e.getMessage(), HttpStatus.CONFLICT);
-        } catch (Exception e) {
-            return createErrorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+//    @PutMapping("/{donationId}/cancel")
+//    public ResponseEntity<?> cancelDonation(@PathVariable UUID donationId) {
+//        try {
+//            Donation donation = donationService.cancelDonation(donationId);
+//            return new ResponseEntity<>(donation, HttpStatus.OK);
+//        } catch (IllegalArgumentException e) {
+//            return createErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+//        } catch (IllegalStateException e) {
+//            return createErrorResponse(e.getMessage(), HttpStatus.CONFLICT);
+//        } catch (Exception e) {
+//            return createErrorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
     @DeleteMapping("/{donationId}")
     public ResponseEntity<?> deleteDonation(@PathVariable UUID donationId) {
@@ -104,7 +104,7 @@ public class DonationController {
     }
 
     @GetMapping("/campaign/{campaignId}")
-    public ResponseEntity<?> getDonationsByCampaignId(@PathVariable UUID campaignId) {
+    public ResponseEntity<?> getDonationsByCampaignId(@PathVariable String campaignId) {
         try {
             List<Donation> donations = donationService.getDonationsByCampaignId(campaignId);
             return new ResponseEntity<>(donations, HttpStatus.OK);

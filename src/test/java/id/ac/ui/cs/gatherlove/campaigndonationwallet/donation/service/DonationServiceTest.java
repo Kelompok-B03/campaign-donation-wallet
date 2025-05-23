@@ -52,14 +52,14 @@ class DonationServiceTest {
     private DonationServiceImpl donationService;
 
     private UUID userId;
-    private UUID campaignId;
+    private String campaignId;
     private UUID donationId;
     private Donation testDonation;
 
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
-        campaignId = UUID.randomUUID();
+        campaignId = UUID.randomUUID().toString();
         donationId = UUID.randomUUID();
 
         testDonation = new Donation(userId, campaignId, 100.0f, "Test donation");
@@ -109,34 +109,34 @@ class DonationServiceTest {
         verify(donationRepository).save(testDonation);
     }
 
-    @Test
-    void testCancelDonation() {
-        when(donationRepository.findByDonationId(donationId)).thenReturn(testDonation);
-        when(donationRepository.save(any(Donation.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Donation result = donationService.cancelDonation(donationId);
-
-        assertEquals("Cancelled", result.getStateName());
-
-        verify(donationRepository).findByDonationId(donationId);
-        verify(donationRepository).save(testDonation);
-    }
-
-    @Test
-    void testCancelFinishedDonation() {
-        testDonation.getState().updateStatus(); // Change to Finished state
-
-        when(donationRepository.findByDonationId(donationId)).thenReturn(testDonation);
-
-        Exception exception = assertThrows(IllegalStateException.class, () -> {
-            donationService.cancelDonation(donationId);
-        });
-
-        assertTrue(exception.getMessage().contains("Cannot cancel"));
-
-        verify(donationRepository).findByDonationId(donationId);
-        verify(donationRepository, never()).save(any(Donation.class));
-    }
+//    @Test
+//    void testCancelDonation() {
+//        when(donationRepository.findByDonationId(donationId)).thenReturn(testDonation);
+//        when(donationRepository.save(any(Donation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+//
+//        Donation result = donationService.cancelDonation(donationId);
+//
+//        assertEquals("Cancelled", result.getStateName());
+//
+//        verify(donationRepository).findByDonationId(donationId);
+//        verify(donationRepository).save(testDonation);
+//    }
+//
+//    @Test
+//    void testCancelFinishedDonation() {
+//        testDonation.getState().updateStatus(); // Change to Finished state
+//
+//        when(donationRepository.findByDonationId(donationId)).thenReturn(testDonation);
+//
+//        Exception exception = assertThrows(IllegalStateException.class, () -> {
+//            donationService.cancelDonation(donationId);
+//        });
+//
+//        assertTrue(exception.getMessage().contains("Cannot cancel"));
+//
+//        verify(donationRepository).findByDonationId(donationId);
+//        verify(donationRepository, never()).save(any(Donation.class));
+//    }
 
     @Test
     void testDeleteDonation() {

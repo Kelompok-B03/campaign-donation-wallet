@@ -24,13 +24,13 @@ class DonationRepositoryTest {
     private DonationRepository donationRepository;
 
     private UUID userId;
-    private UUID campaignId;
+    private String campaignId;
     private Donation donation;
 
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
-        campaignId = UUID.randomUUID();
+        campaignId = UUID.randomUUID().toString();
 
         donation = new Donation(userId, campaignId, 100.0f, "For good cause");
         donation.setCreatedAt(new Date());

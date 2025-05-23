@@ -9,10 +9,10 @@ public class CancelledState implements DonationState {
         // No-op
     }
 
-    @Override
-    public void cancel() {
-        // Already cancelled
-    }
+//    @Override
+//    public void cancel() {
+//        // Already cancelled
+//    }
 
     @Override
     public String getName() {
