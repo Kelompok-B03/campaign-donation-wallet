@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -40,18 +41,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(WalletController.class)
-@Import(WalletControllerTest.MockServiceConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
 class WalletControllerTest {
-
-    @TestConfiguration
-    static class MockServiceConfig {
-        @Bean
-        public WalletService walletService() {
-            return mock(WalletService.class);
-        }
-    }
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -63,48 +54,52 @@ class WalletControllerTest {
 
     @Test
     void testCreateWallet_ReturnsOk() throws Exception {
+        UUID userId = UUID.randomUUID();
         Wallet wallet = new Wallet();
         wallet.setId(1L);
-        wallet.setUserId(1L);
+        wallet.setUserId(userId);
         
-        when(walletService.createWallet(1L)).thenReturn(wallet);
+        when(walletService.createWallet(userId)).thenReturn(wallet);
         
         mockMvc.perform(post("/api/wallet")
-                .param("userId", "1"))
+                .param("userId", userId.toString()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("1"));
                 
-        verify(walletService).createWallet(1L);
+        verify(walletService).createWallet(userId);
     }
 
     @Test
     void testGetWalletBalance_ReturnsOk() throws Exception {
+        UUID userId = UUID.randomUUID();
         WalletBalanceDTO balanceDTO = WalletBalanceDTO.builder()
-                .userId(1L)
+                .userId(userId)
                 .balance(BigDecimal.valueOf(1000))
                 .build();
 
-        when(walletService.getWalletBalance(1L)).thenReturn(balanceDTO);
+        when(walletService.getWalletBalance(userId)).thenReturn(balanceDTO);
 
         mockMvc.perform(get("/api/wallet/balance")
-                .param("userId", "1"))
+                .param("userId", userId.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.balance").value(1000));
     }
     
     @Test
     void testGetWalletBalance_NotFound() throws Exception {
-        when(walletService.getWalletBalance(999L)).thenThrow(new ResourceNotFoundException("Wallet not found"));
+        UUID userId = UUID.randomUUID();
+        when(walletService.getWalletBalance(userId)).thenThrow(new ResourceNotFoundException("Wallet not found"));
         
         mockMvc.perform(get("/api/wallet/balance")
-                .param("userId", "999"))
+                .param("userId", userId.toString()))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void testTopUpWallet_ReturnsCreated() throws Exception {
+        UUID userId = UUID.randomUUID();
         TopUpRequestDTO request = TopUpRequestDTO.builder()
-                .userId(1L)
+                .userId(userId)
                 .amount(BigDecimal.TEN)
                 .paymentMethod(Transaction.PaymentMethod.GOPAY)
                 .paymentPhone("081234567890")
@@ -129,8 +124,9 @@ class WalletControllerTest {
     
     @Test
     void testTopUpWallet_WalletNotFound() throws Exception {
+        UUID userId = UUID.randomUUID();
         TopUpRequestDTO request = TopUpRequestDTO.builder()
-                .userId(999L)
+                .userId(userId)
                 .amount(BigDecimal.TEN)
                 .paymentMethod(Transaction.PaymentMethod.GOPAY)
                 .paymentPhone("081234567890")
@@ -147,8 +143,9 @@ class WalletControllerTest {
     
     @Test
     void testTopUpWallet_BadRequest() throws Exception {
+        UUID userId = UUID.randomUUID();
         TopUpRequestDTO request = TopUpRequestDTO.builder()
-                .userId(1L)
+                .userId(userId)
                 .amount(BigDecimal.valueOf(-10)) // Negative amount
                 .paymentMethod(Transaction.PaymentMethod.GOPAY)
                 .paymentPhone("081234567890")
@@ -165,15 +162,16 @@ class WalletControllerTest {
     
     @Test
     void testGetTransactions_WithLimit_ReturnsOk() throws Exception {
+        UUID userId = UUID.randomUUID();
         List<TransactionDTO> transactions = Arrays.asList(
                 TransactionDTO.builder().id(1L).amount(BigDecimal.TEN).type(TransactionType.TOP_UP).build(),
                 TransactionDTO.builder().id(2L).amount(BigDecimal.valueOf(20)).type(TransactionType.DONATION).build()
         );
         
-        when(walletService.getRecentTransactions(eq(1L), eq(5))).thenReturn(transactions);
+        when(walletService.getRecentTransactions(eq(userId), eq(5))).thenReturn(transactions);
         
         mockMvc.perform(get("/api/wallet/transactions")
-                .param("userId", "1")
+                .param("userId", userId.toString())
                 .param("limit", "5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].amount").value(10))
@@ -182,15 +180,16 @@ class WalletControllerTest {
     
     @Test
     void testGetTransactions_WithType_ReturnsOk() throws Exception {
+        UUID userId = UUID.randomUUID();
         List<TransactionDTO> transactions = Arrays.asList(
                 TransactionDTO.builder().id(1L).amount(BigDecimal.TEN).type(TransactionType.TOP_UP).build(),
                 TransactionDTO.builder().id(3L).amount(BigDecimal.valueOf(30)).type(TransactionType.TOP_UP).build()
         );
         
-        when(walletService.getTransactionsByType(eq(1L), eq(TransactionType.TOP_UP))).thenReturn(transactions);
+        when(walletService.getTransactionsByType(eq(userId), eq(TransactionType.TOP_UP))).thenReturn(transactions);
         
         mockMvc.perform(get("/api/wallet/transactions")
-                .param("userId", "1")
+                .param("userId", userId.toString())
                 .param("type", "TOP_UP"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].amount").value(10))
@@ -199,6 +198,7 @@ class WalletControllerTest {
     
     @Test
     void testGetTransactions_WithPagination_ReturnsOk() throws Exception {
+        UUID userId = UUID.randomUUID();
         List<TransactionDTO> transactions = Arrays.asList(
                 TransactionDTO.builder().id(1L).amount(BigDecimal.TEN).type(TransactionType.TOP_UP).build(),
                 TransactionDTO.builder().id(2L).amount(BigDecimal.valueOf(20)).type(TransactionType.DONATION).build()
@@ -206,10 +206,10 @@ class WalletControllerTest {
         
         Page<TransactionDTO> page = new PageImpl<>(transactions);
         
-        when(walletService.getTransactionHistory(eq(1L), any(Pageable.class))).thenReturn(page);
+        when(walletService.getTransactionHistory(eq(userId), any(Pageable.class))).thenReturn(page);
         
         mockMvc.perform(get("/api/wallet/transactions")
-                .param("userId", "1")
+                .param("userId", userId.toString())
                 .param("page", "0")
                 .param("size", "10"))
                 .andExpect(status().isOk())
@@ -219,54 +219,61 @@ class WalletControllerTest {
     
     @Test
     void testGetTransactions_ResourceNotFound() throws Exception {
-        when(walletService.getTransactionHistory(eq(999L), any(Pageable.class)))
+        UUID userId = UUID.randomUUID();
+        when(walletService.getTransactionHistory(eq(userId), any(Pageable.class)))
                 .thenThrow(new ResourceNotFoundException("Wallet not found"));
         
         mockMvc.perform(get("/api/wallet/transactions")
-                .param("userId", "999"))
+                .param("userId", userId.toString()))
                 .andExpect(status().isNotFound());
     }
     
     @Test
     void testGetTransactions_InvalidType() throws Exception {
+        UUID userId = UUID.randomUUID();
         mockMvc.perform(get("/api/wallet/transactions")
-                .param("userId", "1")
+                .param("userId", userId.toString())
                 .param("type", "INVALID_TYPE"))
                 .andExpect(status().isBadRequest());
     }
     
     @Test
     void testDeleteTopUpTransaction_ReturnsOk() throws Exception {
-        when(walletService.deleteTopUpTransaction(1L, 1L)).thenReturn(true);
+        UUID userId = UUID.randomUUID();
+        when(walletService.deleteTopUpTransaction(userId, 1L)).thenReturn(true);
         
         mockMvc.perform(delete("/api/wallet/transactions/1")
-                .param("userId", "1"))
+                .param("userId", userId.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.deleted").value(true));
     }
     
     @Test
     void testDeleteTopUpTransaction_NotFound() throws Exception {
-        when(walletService.deleteTopUpTransaction(1L, 999L))
+        UUID userId = UUID.randomUUID();
+        when(walletService.deleteTopUpTransaction(userId, 999L))
                 .thenThrow(new ResourceNotFoundException("Transaction not found"));
         
         mockMvc.perform(delete("/api/wallet/transactions/999")
-                .param("userId", "1"))
+                .param("userId", userId.toString()))
                 .andExpect(status().isNotFound());
     }
     
     @Test
     void testDeleteTopUpTransaction_NotAllowed() throws Exception {
-        when(walletService.deleteTopUpTransaction(1L, 2L))
+        UUID userId = UUID.randomUUID();
+        when(walletService.deleteTopUpTransaction(userId, 2L))
                 .thenThrow(new TransactionNotAllowedException("Cannot delete this transaction"));
         
         mockMvc.perform(delete("/api/wallet/transactions/2")
-                .param("userId", "1"))
+                .param("userId", userId.toString()))
                 .andExpect(status().isBadRequest());
     }
     
     @Test
     void testWithdrawCampaignFunds_ReturnsCreated() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String campaignId = "campaign-5";
         TransactionDTO transactionDTO = TransactionDTO.builder()
                 .id(1L)
                 .amount(BigDecimal.valueOf(100))
@@ -277,11 +284,11 @@ class WalletControllerTest {
         Map<String, BigDecimal> withdrawalRequest = new HashMap<>();
         withdrawalRequest.put("amount", BigDecimal.valueOf(100));
         
-        when(walletService.withdrawCampaignFunds(eq(1L), eq(5L), any(BigDecimal.class)))
+        when(walletService.withdrawCampaignFunds(eq(userId), eq(campaignId), any(BigDecimal.class)))
                 .thenReturn(transactionDTO);
         
-        mockMvc.perform(post("/api/wallet/5/withdrawals")
-                .param("userId", "1")
+        mockMvc.perform(post("/api/wallet/" + campaignId + "/withdrawals")
+                .param("userId", userId.toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(withdrawalRequest)))
                 .andExpect(status().isCreated())
@@ -291,11 +298,13 @@ class WalletControllerTest {
     
     @Test
     void testWithdrawCampaignFunds_InvalidAmount() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String campaignId = "campaign-5";
         Map<String, BigDecimal> withdrawalRequest = new HashMap<>();
         withdrawalRequest.put("amount", BigDecimal.valueOf(-50));
         
-        mockMvc.perform(post("/api/wallet/5/withdrawals")
-                .param("userId", "1")
+        mockMvc.perform(post("/api/wallet/" + campaignId + "/withdrawals")
+                .param("userId", userId.toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(withdrawalRequest)))
                 .andExpect(status().isBadRequest());
@@ -303,6 +312,8 @@ class WalletControllerTest {
     
     @Test
     void testRecordDonation_ReturnsCreated() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String campaignId = "campaign-5";
         TransactionDTO transactionDTO = TransactionDTO.builder()
                 .id(1L)
                 .amount(BigDecimal.valueOf(50))
@@ -312,12 +323,12 @@ class WalletControllerTest {
                 .build();
         
         Map<String, Object> donationRequest = new HashMap<>();
-        donationRequest.put("userId", 1L);
-        donationRequest.put("campaignId", 5L);
+        donationRequest.put("userId", userId.toString());
+        donationRequest.put("campaignId", campaignId);
         donationRequest.put("amount", "50");
         donationRequest.put("description", "Support for campaign");
         
-        when(walletService.recordDonation(eq(1L), eq(5L), any(BigDecimal.class), eq("Support for campaign")))
+        when(walletService.recordDonation(eq(userId), eq(campaignId), any(BigDecimal.class), eq("Support for campaign")))
                 .thenReturn(transactionDTO);
         
         mockMvc.perform(post("/api/wallet/donations")
@@ -331,9 +342,11 @@ class WalletControllerTest {
     
     @Test
     void testRecordDonation_InvalidAmount() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String campaignId = "campaign-5";
         Map<String, Object> donationRequest = new HashMap<>();
-        donationRequest.put("userId", 1L);
-        donationRequest.put("campaignId", 5L);
+        donationRequest.put("userId", userId.toString());
+        donationRequest.put("campaignId", campaignId);
         donationRequest.put("amount", "-50");
         donationRequest.put("description", "Support for campaign");
         
@@ -345,13 +358,15 @@ class WalletControllerTest {
     
     @Test
     void testRecordDonation_InsufficientBalance() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String campaignId = "campaign-5";
         Map<String, Object> donationRequest = new HashMap<>();
-        donationRequest.put("userId", 1L);
-        donationRequest.put("campaignId", 5L);
+        donationRequest.put("userId", userId.toString());
+        donationRequest.put("campaignId", campaignId);
         donationRequest.put("amount", "5000");
         donationRequest.put("description", "Support for campaign");
         
-        when(walletService.recordDonation(eq(1L), eq(5L), any(BigDecimal.class), anyString()))
+        when(walletService.recordDonation(eq(userId), eq(campaignId), any(BigDecimal.class), anyString()))
                 .thenThrow(new InsufficientBalanceException("Insufficient balance"));
         
         mockMvc.perform(post("/api/wallet/donations")
@@ -361,10 +376,10 @@ class WalletControllerTest {
     }
     
     @Test
-    void testRecordDonation_InvalidNumericValues() throws Exception {
+    void testRecordDonation_InvalidUUIDValues() throws Exception {
         Map<String, Object> donationRequest = new HashMap<>();
-        donationRequest.put("userId", "invalid");
-        donationRequest.put("campaignId", 5L);
+        donationRequest.put("userId", "invalid-uuid");
+        donationRequest.put("campaignId", "campaign-5");
         donationRequest.put("amount", "50");
         donationRequest.put("description", "Support for campaign");
         

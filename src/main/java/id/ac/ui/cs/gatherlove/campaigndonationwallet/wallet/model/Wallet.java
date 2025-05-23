@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Entity
 @Table(name = "wallets")
@@ -19,7 +20,7 @@ public class Wallet {
     private Long id;
     
     @Column(name = "user_id", nullable = false)
-    private Long userId; // Reference to User entity
+    private UUID userId; // Reference to User entity
     
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal balance;

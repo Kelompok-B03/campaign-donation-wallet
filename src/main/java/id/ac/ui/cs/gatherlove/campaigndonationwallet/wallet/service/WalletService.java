@@ -11,24 +11,25 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 public interface WalletService {
     
-    Wallet createWallet(Long userId);
+    Wallet createWallet(UUID userId);
 
-    WalletBalanceDTO getWalletBalance(Long userId);
+    WalletBalanceDTO getWalletBalance(UUID userId);
     
     TransactionDTO topUpWallet(TopUpRequestDTO request);
 
-    List<TransactionDTO> getRecentTransactions(Long userId, int limit);
+    List<TransactionDTO> getRecentTransactions(UUID userId, int limit);
 
-    Page<TransactionDTO> getTransactionHistory(Long userId, Pageable pageable);
+    Page<TransactionDTO> getTransactionHistory(UUID userId, Pageable pageable);
 
-    List<TransactionDTO> getTransactionsByType(Long userId, TransactionType type);
+    List<TransactionDTO> getTransactionsByType(UUID userId, TransactionType type);
 
-    boolean deleteTopUpTransaction(Long userId, Long transactionId);
+    boolean deleteTopUpTransaction(UUID userId, Long transactionId);
 
-    TransactionDTO withdrawCampaignFunds(Long userId, Long campaignId, BigDecimal amount);
+    TransactionDTO withdrawCampaignFunds(UUID userId, String campaignId, BigDecimal amount);
 
-    TransactionDTO recordDonation(Long userId, Long campaignId, BigDecimal amount, String description);
+    TransactionDTO recordDonation(UUID userId, String campaignId, BigDecimal amount, String description);
 }

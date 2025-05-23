@@ -12,7 +12,7 @@ class TransactionTest {
     void testTransactionCreation() {
         Long id = 1L;
         Long walletId = 100L;
-        Long campaignId = 200L;
+        String campaignId = "campaign-200";
         BigDecimal amount = new BigDecimal("250.00");
         Transaction.TransactionType type = Transaction.TransactionType.DONATION;
         Transaction.PaymentMethod paymentMethod = Transaction.PaymentMethod.GOPAY;
@@ -50,7 +50,7 @@ class TransactionTest {
         Transaction transaction = new Transaction();
         Long id = 1L;
         Long walletId = 100L;
-        Long campaignId = 200L;
+        String campaignId = "campaign-300";
         BigDecimal amount = new BigDecimal("250.00");
         Transaction.TransactionType type = Transaction.TransactionType.DONATION;
         Transaction.PaymentMethod paymentMethod = Transaction.PaymentMethod.GOPAY;
