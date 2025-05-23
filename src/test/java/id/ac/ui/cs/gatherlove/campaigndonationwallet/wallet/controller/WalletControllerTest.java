@@ -14,8 +14,12 @@ import id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.model.Wallet;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.service.WalletService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -36,7 +40,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(WalletController.class)
+@Import(WalletControllerTest.MockServiceConfig.class)
+@AutoConfigureMockMvc(addFilters = false)
 class WalletControllerTest {
+
+    @TestConfiguration
+    static class MockServiceConfig {
+        @Bean
+        public WalletService walletService() {
+            return mock(WalletService.class);
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
