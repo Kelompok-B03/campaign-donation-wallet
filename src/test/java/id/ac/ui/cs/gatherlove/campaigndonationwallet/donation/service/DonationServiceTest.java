@@ -84,7 +84,7 @@ class DonationServiceTest {
         when(donationRepository.save(any(Donation.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        Donation result = donationService.createDonation(userId, campaignId, amount, message);
+        Donation result = donationService.createDonation(campaignId, amount, message);
 
         assertNotNull(result);
         assertEquals(userId, result.getUserId());
@@ -109,35 +109,6 @@ class DonationServiceTest {
         verify(donationRepository).save(testDonation);
     }
 
-//    @Test
-//    void testCancelDonation() {
-//        when(donationRepository.findByDonationId(donationId)).thenReturn(testDonation);
-//        when(donationRepository.save(any(Donation.class))).thenAnswer(invocation -> invocation.getArgument(0));
-//
-//        Donation result = donationService.cancelDonation(donationId);
-//
-//        assertEquals("Cancelled", result.getStateName());
-//
-//        verify(donationRepository).findByDonationId(donationId);
-//        verify(donationRepository).save(testDonation);
-//    }
-//
-//    @Test
-//    void testCancelFinishedDonation() {
-//        testDonation.getState().updateStatus(); // Change to Finished state
-//
-//        when(donationRepository.findByDonationId(donationId)).thenReturn(testDonation);
-//
-//        Exception exception = assertThrows(IllegalStateException.class, () -> {
-//            donationService.cancelDonation(donationId);
-//        });
-//
-//        assertTrue(exception.getMessage().contains("Cannot cancel"));
-//
-//        verify(donationRepository).findByDonationId(donationId);
-//        verify(donationRepository, never()).save(any(Donation.class));
-//    }
-
     @Test
     void testDeleteDonation() {
         when(donationRepository.findByDonationId(donationId)).thenReturn(testDonation);
@@ -151,7 +122,7 @@ class DonationServiceTest {
     @Test
     void testCreateDonationWithInvalidAmount() {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            donationService.createDonation(userId, campaignId, -50.0f, "Invalid donation");
+            donationService.createDonation(campaignId, -50.0f, "Invalid donation");
         });
 
         assertTrue(exception.getMessage().contains("Amount must be positive"));

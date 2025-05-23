@@ -10,7 +10,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DonationRequest {
-    private UUID userId;
     private String campaignId;
     private Float amount;
     private String message;

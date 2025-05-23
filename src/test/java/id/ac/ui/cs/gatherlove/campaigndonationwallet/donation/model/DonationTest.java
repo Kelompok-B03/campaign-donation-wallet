@@ -58,21 +58,6 @@ public class DonationTest {
         assertTrue(donation.getState() instanceof FinishedState);
     }
 
-//    @Test
-//    void testCancelFromPending() {
-//        Donation donation = new Donation(userId, campaignId, 100f, "Cancelable");
-//        assertDoesNotThrow(donation::cancel);
-//        assertTrue(donation.getState() instanceof CancelledState);
-//    }
-
-//    @Test
-//    void testCancelFromFinishedThrows() {
-//        Donation donation = new Donation(userId, campaignId, 100f, "Final");
-//        donation.setState(new FinishedState());
-//
-//        assertThrows(IllegalStateException.class, donation::cancel);
-//    }
-
     @Test
     void testManualStateChange() {
         Donation donation = new Donation(userId, campaignId, 100f, null);

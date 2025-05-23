@@ -61,17 +61,10 @@ public class Donation {
             case "Finished":
                 setState(new FinishedState());
                 break;
-//            case "Cancelled":
-//                setState(new CancelledState());
-//                break;
             default:
                 throw new IllegalStateException("Unknown state: " + stateName);
         }
     }
-
-//    public void cancel() {
-//        getState().cancel();
-//    }
 }
 
 

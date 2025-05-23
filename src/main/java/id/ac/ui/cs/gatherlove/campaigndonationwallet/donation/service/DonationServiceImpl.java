@@ -3,6 +3,10 @@ package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.repository.DonationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -19,7 +23,7 @@ import java.util.HashMap;
 public class DonationServiceImpl implements DonationService {
 
     private final DonationRepository donationRepository;
-    private final WebClient requestWebClient;  // Injected
+    private final WebClient requestWebClient;
 
     @Autowired
     public DonationServiceImpl(DonationRepository donationRepository, WebClient requestWebClient) {
@@ -29,7 +33,19 @@ public class DonationServiceImpl implements DonationService {
 
     @Override
     @Transactional
-    public Donation createDonation(UUID userId, String campaignId, Float amount, String message) {
+    public Donation createDonation(String campaignId, Float amount, String message) {
+        // Get user ID from JWT token
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Jwt jwt = ((AbstractAuthenticationToken) authentication).getPrincipal() instanceof Jwt
+                ? (Jwt) ((AbstractAuthenticationToken) authentication).getPrincipal()
+                : null;
+
+        if (jwt == null) {
+            throw new RuntimeException("Invalid JWT token: missing principal");
+        }
+
+        UUID userId = UUID.fromString(jwt.getSubject());
+
         if (amount <= 0) throw new IllegalArgumentException("Amount must be positive");
 
         // Prepare the request body
@@ -68,22 +84,6 @@ public class DonationServiceImpl implements DonationService {
 
         return donationRepository.save(donation);
     }
-
-//    @Override
-//    @Transactional
-//    public Donation cancelDonation(UUID donationId) {
-//        Donation donation = findDonationById(donationId);
-//
-//        try {
-//            // Cancel donation if possible
-//            donation.cancel();
-//
-//            return donationRepository.save(donation);
-//        } catch (IllegalStateException e) {
-//            // Rethrow the exception with additional context
-//            throw new IllegalStateException("Cannot cancel donation with ID " + donationId + ": " + e.getMessage(), e);
-//        }
-//    }
 
     @Override
     @Transactional
