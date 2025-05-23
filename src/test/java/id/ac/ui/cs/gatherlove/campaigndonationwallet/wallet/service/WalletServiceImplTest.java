@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,24 +30,28 @@ class WalletServiceImplTest {
     @InjectMocks
     private WalletServiceImpl walletService;
 
+    private UUID testUserId;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        testUserId = UUID.randomUUID();
     }
 
     @Test
     void testGetWalletBalance_ReturnsBalance() {
-        Wallet wallet = Wallet.builder().id(1L).userId(1L).balance(BigDecimal.valueOf(500)).build();
-        when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(wallet));
+        Wallet wallet = Wallet.builder().id(1L).userId(testUserId).balance(BigDecimal.valueOf(500)).build();
+        when(walletRepository.findByUserId(testUserId)).thenReturn(Optional.of(wallet));
 
-        WalletBalanceDTO result = walletService.getWalletBalance(1L);
+        WalletBalanceDTO result = walletService.getWalletBalance(testUserId);
 
         assertThat(result.getBalance()).isEqualTo(BigDecimal.valueOf(500));
+        assertThat(result.getUserId()).isEqualTo(testUserId);
     }
 
     @Test
     void testCreateWallet_ShouldCreateAndReturnWallet() {
-        Long userId = 123L;
+        UUID userId = UUID.randomUUID();
 
         when(walletRepository.findByUserId(userId)).thenReturn(Optional.empty());
 

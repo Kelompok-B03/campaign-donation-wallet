@@ -3,6 +3,8 @@ package id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.model;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.model.Wallet;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class WalletTest {
@@ -10,7 +12,7 @@ class WalletTest {
     @Test
     void testWalletCreation() {
         Long id = 1L;
-        Long userId = 100L;
+        UUID userId = UUID.randomUUID();
         BigDecimal balance = new BigDecimal("1000.00");
         
         Wallet wallet = Wallet.builder()
@@ -28,7 +30,7 @@ class WalletTest {
     void testWalletSettersAndGetters() {
         Wallet wallet = new Wallet();
         Long id = 1L;
-        Long userId = 100L;
+        UUID userId = UUID.randomUUID();
         BigDecimal balance = new BigDecimal("1000.00");
         
         wallet.setId(id);
@@ -52,7 +54,7 @@ class WalletTest {
     @Test
     void testAllArgsConstructor() {
         Long id = 1L;
-        Long userId = 100L;
+        UUID userId = UUID.randomUUID();
         BigDecimal balance = new BigDecimal("1000.00");
         
         Wallet wallet = new Wallet(id, userId, balance);

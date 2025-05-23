@@ -28,14 +28,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     Optional<Transaction> findByIdAndWalletIdAndDeletedFalse(Long id, Long walletId);
 
-    List<Transaction> findByCampaignIdAndDeletedFalseOrderByTimestampDesc(Long campaignId);
+    List<Transaction> findByCampaignIdAndDeletedFalseOrderByTimestampDesc(String campaignId);
 
     @Modifying
     @Query("UPDATE Transaction t SET t.deleted = true WHERE t.id = :id AND t.walletId = :walletId AND t.type = :type")
     int softDeleteTransaction(@Param("id") Long id, @Param("walletId") Long walletId, @Param("type") TransactionType type);
     
-    boolean existsByCampaignIdAndTypeAndDeletedFalse(Long campaignId, TransactionType type);
+    boolean existsByCampaignIdAndTypeAndDeletedFalse(String campaignId, TransactionType type);
 
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.campaignId = :campaignId AND t.type = :type AND t.deleted = false")
-    Double sumAmountByCampaignIdAndType(@Param("campaignId") Long campaignId, @Param("type") TransactionType type);
+    Double sumAmountByCampaignIdAndType(@Param("campaignId") String campaignId, @Param("type") TransactionType type);
 }
