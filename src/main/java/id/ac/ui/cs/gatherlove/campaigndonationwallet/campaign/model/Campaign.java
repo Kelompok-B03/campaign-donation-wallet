@@ -23,8 +23,8 @@ public class Campaign {
     private LocalDate startDate;
     private LocalDate endDate;
     private String fundraiserId;
-    private String status = CampaignStatus.MENUNGGU_VERIFIKASI.getValue();
-    private Boolean withdrawed = false;
+    private String status;
+    private Boolean withdrawed;
 
     public void setStatus(String status) {
         if (CampaignStatus.contains(status)) {

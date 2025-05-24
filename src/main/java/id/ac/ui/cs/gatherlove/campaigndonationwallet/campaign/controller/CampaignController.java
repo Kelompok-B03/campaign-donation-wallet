@@ -32,6 +32,8 @@ public class CampaignController {
     public void createCampaign(@RequestBody Campaign campaign, Authentication authentication) {
         String userId = getUserIdFromToken(authentication);
         campaign.setFundraiserId(userId);
+        campaign.setStatus("MENGUNGGU_VERIFIKASI");
+        campaign.setWithdrawed(false);
         CreateCampaignCommand createCommand = new CreateCampaignCommand(campaignService, campaign);
         CampaignCommandInvoker invoker = new CampaignCommandInvoker();
         invoker.setCommand(createCommand);

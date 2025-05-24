@@ -41,6 +41,7 @@ public class SecurityConfig {
 
                 .requestMatchers("/api/campaign").permitAll() // GET semua campaign
                 .requestMatchers("/api/campaign/{id}").permitAll() // GET by ID
+                .requestMatchers("/api/donations/**").authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
