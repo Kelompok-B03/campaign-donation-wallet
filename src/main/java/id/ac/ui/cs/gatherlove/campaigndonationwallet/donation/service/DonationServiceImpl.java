@@ -3,12 +3,18 @@ package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.repository.DonationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +24,7 @@ import java.util.HashMap;
 public class DonationServiceImpl implements DonationService {
 
     private final DonationRepository donationRepository;
-    private final WebClient requestWebClient;  // Injected
+    private final WebClient requestWebClient;
 
     @Autowired
     public DonationServiceImpl(DonationRepository donationRepository, WebClient requestWebClient) {
@@ -28,19 +34,33 @@ public class DonationServiceImpl implements DonationService {
 
     @Override
     @Transactional
-    public Donation createDonation(UUID userId, UUID campaignId, Float amount, String message) {
+    public Donation createDonation(String campaignId, Float amount, String message) {
+        // Get user ID from JWT token
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Jwt jwt = ((AbstractAuthenticationToken) authentication).getPrincipal() instanceof Jwt
+                ? (Jwt) ((AbstractAuthenticationToken) authentication).getPrincipal()
+                : null;
+
+        if (jwt == null) {
+            throw new RuntimeException("Invalid JWT token: missing principal");
+        }
+
+        UUID userId = UUID.fromString(jwt.getSubject());
+        String token = jwt.getTokenValue();
+
         if (amount <= 0) throw new IllegalArgumentException("Amount must be positive");
 
         // Prepare the request body
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("userId", userId);
         requestBody.put("campaignId", campaignId);
-        requestBody.put("amount", amount);
+        requestBody.put("amount", BigDecimal.valueOf((double) amount));
         requestBody.put("description", message);
 
         // Send request to payment
         ResponseEntity<String> paymentResponse = requestWebClient.post()
             .uri("/api/donate")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
             .bodyValue(requestBody)
             .retrieve()
             .onStatus(response -> response.isError(), clientResponse ->
@@ -70,22 +90,6 @@ public class DonationServiceImpl implements DonationService {
 
     @Override
     @Transactional
-    public Donation cancelDonation(UUID donationId) {
-        Donation donation = findDonationById(donationId);
-
-        try {
-            // Cancel donation if possible
-            donation.cancel();
-
-            return donationRepository.save(donation);
-        } catch (IllegalStateException e) {
-            // Rethrow the exception with additional context
-            throw new IllegalStateException("Cannot cancel donation with ID " + donationId + ": " + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    @Transactional
     public void deleteDonation(UUID donationId) {
         Donation donation = findDonationById(donationId);
         donationRepository.delete(donation);
@@ -109,7 +113,7 @@ public class DonationServiceImpl implements DonationService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Donation> getDonationsByCampaignId(UUID campaignId) {
+    public List<Donation> getDonationsByCampaignId(String campaignId) {
         return donationRepository.findByCampaignId(campaignId);
     }
 

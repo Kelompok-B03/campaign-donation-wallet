@@ -10,13 +10,11 @@ import java.util.UUID;
 @Repository
 public interface DonationRepository extends JpaRepository<Donation, UUID> {
 
-    // Skeleton methods (to be implemented/customized later)
-
     Donation findByDonationId(UUID donationId);
 
     List<Donation> findByUserId(UUID userId);
 
-    List<Donation> findByCampaignId(UUID campaignId);
+    List<Donation> findByCampaignId(String campaignId);
 
     List<Donation> findByStateName(String stateName);
 }
