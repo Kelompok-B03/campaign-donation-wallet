@@ -42,9 +42,9 @@ public class SecurityConfig {
                 // Secured endpoints that require authentication
                 .requestMatchers("/api/wallet/**").authenticated()
 
+                .requestMatchers(HttpMethod.POST, "/api/campaign").authenticated()
                 .requestMatchers("/api/campaign").permitAll() // GET semua campaign
                 .requestMatchers("/api/campaign/{id}").permitAll() // GET by ID
-                .requestMatchers(HttpMethod.POST, "/api/campaign").authenticated()
 
                 .requestMatchers("/api/donations/**").authenticated()
             )
