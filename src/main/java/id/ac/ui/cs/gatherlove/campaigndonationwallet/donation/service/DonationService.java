@@ -12,4 +12,5 @@ public interface DonationService {
     Donation getDonationById(UUID donationId);
     List<Donation> getDonationsByUserId(UUID userId);
     List<Donation> getDonationsByCampaignId(String campaignId);
+    List<Donation> getSelfDonations();
 }

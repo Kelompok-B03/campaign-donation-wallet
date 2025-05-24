@@ -36,15 +36,7 @@ public class DonationServiceImpl implements DonationService {
     @Transactional
     public Donation createDonation(String campaignId, Float amount, String message) {
         // Get user ID from JWT token
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Jwt jwt = ((AbstractAuthenticationToken) authentication).getPrincipal() instanceof Jwt
-                ? (Jwt) ((AbstractAuthenticationToken) authentication).getPrincipal()
-                : null;
-
-        if (jwt == null) {
-            throw new RuntimeException("Invalid JWT token: missing principal");
-        }
-
+        Jwt jwt = getCurrentJwt();
         UUID userId = UUID.fromString(jwt.getSubject());
         String token = jwt.getTokenValue();
 
@@ -117,8 +109,26 @@ public class DonationServiceImpl implements DonationService {
         return donationRepository.findByCampaignId(campaignId);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<Donation> getSelfDonations() {
+        Jwt jwt = getCurrentJwt();
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return donationRepository.findByUserId(userId);
+    }
+
     // Helper 'find-by-Id' method
     private Donation findDonationById(UUID donationId) {
         return donationRepository.findByDonationId(donationId);
+    }
+
+    // Helper method to get JWT token
+    private Jwt getCurrentJwt() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof AbstractAuthenticationToken token &&
+                token.getPrincipal() instanceof Jwt jwt) {
+            return jwt;
+        }
+        throw new RuntimeException("Invalid JWT token: missing or invalid principal");
     }
 }
