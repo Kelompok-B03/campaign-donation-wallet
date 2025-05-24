@@ -1,7 +1,9 @@
 package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service;
 
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model.Campaign;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.repository.DonationRepository;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.repository.CampaignRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -25,11 +27,14 @@ public class DonationServiceImpl implements DonationService {
 
     private final DonationRepository donationRepository;
     private final WebClient requestWebClient;
+    private final CampaignRepository campaignRepository;
 
     @Autowired
-    public DonationServiceImpl(DonationRepository donationRepository, WebClient requestWebClient) {
+    public DonationServiceImpl(DonationRepository donationRepository, WebClient requestWebClient,
+                               CampaignRepository campaignRepository) {
         this.donationRepository = donationRepository;
         this.requestWebClient = requestWebClient;
+        this.campaignRepository = campaignRepository;
     }
 
     @Override
@@ -64,6 +69,15 @@ public class DonationServiceImpl implements DonationService {
         // Create donation if payment succeed
         if (paymentResponse.getStatusCode().is2xxSuccessful()) {
             Donation donation = new Donation(userId, campaignId, amount, message);
+            // Add to campaign collected funds
+            Campaign campaign = campaignRepository.findById(campaignId).orElse(null);
+            if (campaign != null) {
+                campaign.setFundsCollected(campaign.getFundsCollected() + amount.intValue());
+                donationRepository.save(donation);
+            } else {
+                throw new IllegalArgumentException("Campaign not found");
+            }
+
             return donationRepository.save(donation);
         } else {
             throw new RuntimeException("Failed to create donation. HTTP Status: " + paymentResponse.getStatusCode());
@@ -78,6 +92,16 @@ public class DonationServiceImpl implements DonationService {
         donation.getState().updateStatus();
 
         return donationRepository.save(donation);
+    }
+
+    @Override
+    @Transactional
+    public List<Donation> updateStatusByCampaign(String campaignId) {
+        List<Donation> donations = donationRepository.findByCampaignId(campaignId);
+        for (Donation donation : donations) {
+            donation.getState().updateStatus();
+        }
+        return donationRepository.saveAll(donations);
     }
 
     @Override
