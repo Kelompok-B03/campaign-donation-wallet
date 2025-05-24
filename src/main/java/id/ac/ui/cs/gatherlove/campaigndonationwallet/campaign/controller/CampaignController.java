@@ -85,6 +85,11 @@ public class CampaignController {
         invoker.run();
     }
 
+    @GetMapping("/status/{status}")
+    public List<Campaign> getCampaignsByStatus(@PathVariable String status) {
+        return campaignService.findCampaignsByStatus(status);
+    }
+
     private void validateUserAccess(String ownerId, Authentication authentication) {
         if (authentication instanceof JwtAuthenticationToken jwtToken) {
             String userIdFromToken = jwtToken.getToken().getClaimAsString("userId");

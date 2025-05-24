@@ -44,4 +44,9 @@ public class CampaignServiceImpl implements CampaignService {
     public void update(Campaign campaign) {
         campaignRepository.save(campaign);
     }
+
+    @Override
+    public List<Campaign> findCampaignsByStatus(String status) {
+        return campaignRepository.findByStatus(status);
+    }
 }
