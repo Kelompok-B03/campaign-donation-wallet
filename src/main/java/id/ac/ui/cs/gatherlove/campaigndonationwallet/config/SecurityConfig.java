@@ -14,6 +14,8 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.http.HttpMethod;
+
 
 import java.util.Arrays;
 
@@ -29,8 +31,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             // Use CSRF protection with cookies
-            .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+//            .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+            .csrf(csrf -> csrf.disable())
+//            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints that don't need authentication
                 .requestMatchers("/api/wallet/public/**").permitAll()
@@ -38,6 +41,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/wallet").permitAll()
                 // Secured endpoints that require authentication
                 .requestMatchers("/api/wallet/**").authenticated()
+
+                .requestMatchers(HttpMethod.POST, "/api/campaign").authenticated()
+                .requestMatchers("/api/campaign").permitAll() // GET semua campaign
+                .requestMatchers("/api/campaign/{id}").permitAll() // GET by ID
+
                 .requestMatchers("/api/donations/**").authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

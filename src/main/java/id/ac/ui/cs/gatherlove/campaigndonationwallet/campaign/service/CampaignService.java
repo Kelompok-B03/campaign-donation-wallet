@@ -17,4 +17,6 @@ public interface CampaignService {
     void delete(Campaign campaign);
 
     void update(Campaign campaign);
+
+    List<Campaign> findCampaignsByStatus(String status);
 }
