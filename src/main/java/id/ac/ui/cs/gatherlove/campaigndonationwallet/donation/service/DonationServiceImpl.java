@@ -3,6 +3,7 @@ package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.repository.DonationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,6 +46,7 @@ public class DonationServiceImpl implements DonationService {
         }
 
         UUID userId = UUID.fromString(jwt.getSubject());
+        String token = jwt.getTokenValue();
 
         if (amount <= 0) throw new IllegalArgumentException("Amount must be positive");
 
@@ -58,6 +60,7 @@ public class DonationServiceImpl implements DonationService {
         // Send request to payment
         ResponseEntity<String> paymentResponse = requestWebClient.post()
             .uri("/api/donate")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
             .bodyValue(requestBody)
             .retrieve()
             .onStatus(response -> response.isError(), clientResponse ->
