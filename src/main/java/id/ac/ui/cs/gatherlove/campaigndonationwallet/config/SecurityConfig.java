@@ -38,6 +38,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/wallet").permitAll()
                 // Secured endpoints that require authentication
                 .requestMatchers("/api/wallet/**").authenticated()
+
+                .requestMatchers("/api/campaign").permitAll() // GET semua campaign
+                .requestMatchers("/api/campaign/{id}").permitAll() // GET by ID
                 .requestMatchers("/api/donations/**").authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

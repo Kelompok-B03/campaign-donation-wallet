@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface CampaignRepository extends JpaRepository<Campaign, String> {
     List<Campaign> findByFundraiserId(String fundraiserId);
-
+    List<Campaign> findByStatus(String status);
 }
