@@ -32,7 +32,7 @@ public class CampaignController {
     public void createCampaign(@RequestBody Campaign campaign, Authentication authentication) {
         String userId = getUserIdFromToken(authentication);
         campaign.setFundraiserId(userId);
-        campaign.setStatus("MENGUNGGU_VERIFIKASI");
+        campaign.setStatus("MENUNGGU_VERIFIKASI");
         campaign.setWithdrawed(false);
         CreateCampaignCommand createCommand = new CreateCampaignCommand(campaignService, campaign);
         CampaignCommandInvoker invoker = new CampaignCommandInvoker();
@@ -57,7 +57,7 @@ public class CampaignController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('FUNDRAISER')")
+    @PreAuthorize("isAuthenticated()")
     public void deleteCampaign(@PathVariable String id, Authentication authentication) {
         Campaign campaign = campaignService.findById(id);
         if (campaign == null) {
@@ -71,7 +71,7 @@ public class CampaignController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('FUNDRAISER')")
+    @PreAuthorize("isAuthenticated()")
     public void updateCampaign(@PathVariable String id, @RequestBody Campaign campaign, Authentication authentication) {
         Campaign existing = campaignService.findById(id);
         if (existing == null) {
