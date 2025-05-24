@@ -3,6 +3,7 @@ package id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.enums.CampaignStatus;
 
 import java.time.LocalDate;
 
@@ -22,6 +23,14 @@ public class Campaign {
     private LocalDate startDate;
     private LocalDate endDate;
     private String fundraiserId;
-    private String status;
-    private Boolean withdrawed;
+    private String status = CampaignStatus.MENUNGGU_VERIFIKASI.getValue();
+    private Boolean withdrawed = false;
+
+    public void setStatus(String status) {
+        if (CampaignStatus.contains(status)) {
+            this.status = status;
+        } else {
+            throw new IllegalArgumentException("Invalid status value: " + status);
+        }
+    }
 }
