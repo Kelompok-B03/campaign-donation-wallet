@@ -105,6 +105,17 @@ public class DonationController {
         }
     }
 
+    @PreAuthorize("hasRole('DONOR')")
+    @GetMapping("/self")
+    public ResponseEntity<?> getSelfDonations() {
+        try {
+            List<Donation> donations = donationService.getSelfDonations();
+            return new ResponseEntity<>(donations, HttpStatus.OK);
+        } catch (Exception e) {
+            return createErrorResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     private ResponseEntity<Map<String, String>> createErrorResponse(String message, HttpStatus status) {
         Map<String, String> errorResponse = new HashMap<>();
         errorResponse.put("message", message);
