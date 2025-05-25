@@ -45,11 +45,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // Create authorities from roles
                 Collection<GrantedAuthority> authorities = roles.stream()
-                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+//                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                        .map(role -> {
+                            // Pastikan role memiliki prefix ROLE_
+                            String authorityName = role.startsWith("ROLE_") ? role : "ROLE_" + role;
+                            log.debug("Creating authority: {}", authorityName);
+                            return new SimpleGrantedAuthority(authorityName);
+                        })
                         .collect(Collectors.toList());
 
                 // Create Authentication object
                 JwtAuthenticationToken authentication = new JwtAuthenticationToken(jwt, authorities, email);
+                log.debug("Authorities granted: {}", authorities);
 
                 // Set Authentication in SecurityContext
                 SecurityContextHolder.getContext().setAuthentication(authentication);

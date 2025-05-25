@@ -10,11 +10,6 @@ public class PendingState implements DonationState {
     }
 
     @Override
-    public void cancel() {
-        donation.setState(new CancelledState());
-    }
-
-    @Override
     public String getName() {
         return "Pending";
     }
