@@ -1,6 +1,7 @@
 package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.controller;
 
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.dto.DonationRequest;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.exception.ExternalServiceException;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service.DonationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,8 @@ public class DonationController {
                     request.getMessage()
             );
             return new ResponseEntity<>(donation, HttpStatus.CREATED);
+        } catch (ExternalServiceException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
         } catch (RuntimeException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
