@@ -34,7 +34,6 @@ public class WalletController {
 
     private final WalletService walletService;
 
-    // Only FUNDRAISER role can create wallets
     @PostMapping
     public ResponseEntity<Long> createWallet(@RequestParam UUID userId) {
         Wallet wallet = walletService.createWallet(userId);
@@ -124,70 +123,13 @@ public class WalletController {
         }
     }
 
-    @PostMapping("/{campaignId}/withdrawals")
-    @PreAuthorize("hasRole('FUNDRAISER')")
-    public ResponseEntity<TransactionDTO> withdrawCampaignFunds(
-            @RequestParam UUID userId,
-            @PathVariable String campaignId,
-            @RequestBody Map<String, BigDecimal> withdrawalRequest, 
-            Authentication authentication) {
-        try {
-            validateUserAccess(userId, authentication);
-            BigDecimal amount = withdrawalRequest.get("amount");
-            if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Valid withdrawal amount is required");
-            }
-
-            TransactionDTO transaction = walletService.withdrawCampaignFunds(userId, campaignId, amount);
-            return ResponseEntity.status(HttpStatus.CREATED).body(transaction);
-        } catch (ResourceNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (SecurityException e) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, e.getMessage());
-        } catch (TransactionNotAllowedException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
-    }
-
-    @PostMapping("/donations")
-    @PreAuthorize("hasRole('DONOR')")
-    public ResponseEntity<TransactionDTO> recordDonation(
-            @RequestBody Map<String, Object> donationRequest, 
-            Authentication authentication) {
-        try {
-            UUID userId = UUID.fromString(donationRequest.get("userId").toString());
-            validateUserAccess(userId, authentication);
-
-            String campaignId = donationRequest.get("campaignId").toString();
-            BigDecimal amount = new BigDecimal(donationRequest.get("amount").toString());
-            String description = (String) donationRequest.get("description");
-            if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Donation amount must be positive");
-            }
-            TransactionDTO transaction = walletService.recordDonation(userId, campaignId, amount, description);
-            return ResponseEntity.status(HttpStatus.CREATED).body(transaction);
-        } catch (ResourceNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (SecurityException e) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, e.getMessage());
-        } catch (InsufficientBalanceException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid UUID or numeric values");
-        }
-    }
-    
-    // Utility method to validate if the authenticated user can access the resource
     private void validateUserAccess(UUID userId, Authentication authentication) {
         if (authentication instanceof JwtAuthenticationToken jwtToken) {
             String userIdFromToken = jwtToken.getToken().getClaimAsString("userId");
-            
-            // Allow access for matching user IDs or admin users
             if (userIdFromToken != null && userIdFromToken.equals(userId.toString())) {
                 return;
             }
-            
-            // Check if user has admin role
+
             boolean isAdmin = jwtToken.getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
                 
