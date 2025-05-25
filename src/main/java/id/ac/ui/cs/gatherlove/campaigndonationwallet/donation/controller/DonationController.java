@@ -116,6 +116,13 @@ public class DonationController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/count")
+    public ResponseEntity<Long> getDonationsCount() {
+        long count = donationService.getDonationsCount();
+        return ResponseEntity.ok(count);
+    }
+
     private ResponseEntity<Map<String, String>> createErrorResponse(String message, HttpStatus status) {
         Map<String, String> errorResponse = new HashMap<>();
         errorResponse.put("message", message);

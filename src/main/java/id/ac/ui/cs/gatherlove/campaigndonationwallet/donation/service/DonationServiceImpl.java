@@ -141,6 +141,12 @@ public class DonationServiceImpl implements DonationService {
         return donationRepository.findByUserId(userId);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public long getDonationsCount() {
+        return donationRepository.count();
+    }
+
     // Helper 'find-by-Id' method
     private Donation findDonationById(UUID donationId) {
         return donationRepository.findByDonationId(donationId);
