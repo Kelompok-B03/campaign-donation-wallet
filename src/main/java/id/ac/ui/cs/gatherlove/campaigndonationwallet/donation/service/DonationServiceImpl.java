@@ -5,6 +5,8 @@ import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.exception.External
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.repository.DonationRepository;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.repository.CampaignRepository;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.dto.WalletDTOs.TransactionDTO;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -31,13 +33,15 @@ public class DonationServiceImpl implements DonationService {
     private final DonationRepository donationRepository;
     private final WebClient requestWebClient;
     private final CampaignRepository campaignRepository;
+    private final WalletService walletService;
 
     @Autowired
     public DonationServiceImpl(DonationRepository donationRepository, WebClient requestWebClient,
-                               CampaignRepository campaignRepository) {
+                               CampaignRepository campaignRepository, WalletService walletService) {
         this.donationRepository = donationRepository;
         this.requestWebClient = requestWebClient;
         this.campaignRepository = campaignRepository;
+        this.walletService = walletService;
     }
 
     @Override
@@ -46,49 +50,30 @@ public class DonationServiceImpl implements DonationService {
         // Get user ID from JWT token
         Jwt jwt = getCurrentJwt();
         UUID userId = UUID.fromString(jwt.getClaimAsString("userId"));
-        String token = jwt.getTokenValue();
 
-        if (amount <= 0) throw new IllegalArgumentException("Amount must be positive");
-
-        // Prepare the request body
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("userId", userId);
-        requestBody.put("campaignId", campaignId);
-        requestBody.put("amount", BigDecimal.valueOf((double) amount));
-        requestBody.put("description", message);
-
-        // Send request to payment
-        ResponseEntity<String> paymentResponse = requestWebClient.post()
-                .uri("/api/donate")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .bodyValue(requestBody)
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, clientResponse ->
-                    clientResponse.bodyToMono(String.class)
-                        .flatMap(errorMessage -> {
-                            HttpStatus status = HttpStatus.valueOf(clientResponse.statusCode().value());
-                            return Mono.error(new ExternalServiceException(errorMessage, status));
-                        })
-                )
-                .toEntity(String.class)
-                .block();
-
-        // Create donation if payment succeed
-        if (paymentResponse.getStatusCode().is2xxSuccessful()) {
-            Donation donation = new Donation(userId, campaignId, amount, message);
-            // Add to campaign collected funds
-            Campaign campaign = campaignRepository.findById(campaignId).orElse(null);
-            if (campaign != null) {
-                campaign.setFundsCollected(campaign.getFundsCollected() + amount.intValue());
-                donationRepository.save(donation);
-            } else {
-                throw new IllegalArgumentException("Campaign not found");
-            }
-
-            return donationRepository.save(donation);
-        } else {
-            throw new RuntimeException("Failed to create donation. HTTP Status: " + paymentResponse.getStatusCode());
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Amount must be positive");
         }
+
+        // Process transaction in wallet
+        TransactionDTO transactionDTO = walletService.recordDonation(
+                userId,
+                campaignId,
+                BigDecimal.valueOf(amount),
+                message
+        );
+
+        Donation donation = new Donation(userId, campaignId, amount, message);
+
+        // Update campaign collected funds
+        Campaign campaign = campaignRepository.findById(campaignId).orElse(null);
+        if (campaign != null) {
+            campaign.setFundsCollected(campaign.getFundsCollected() + amount.intValue());
+        } else {
+            throw new IllegalArgumentException("Campaign not found");
+        }
+
+        return donationRepository.save(donation);
     }
 
     @Override
@@ -144,7 +129,7 @@ public class DonationServiceImpl implements DonationService {
     @Transactional(readOnly = true)
     public List<Donation> getSelfDonations() {
         Jwt jwt = getCurrentJwt();
-        UUID userId = UUID.fromString(jwt.getSubject());
+        UUID userId = UUID.fromString(jwt.getClaimAsString("userId"));
         return donationRepository.findByUserId(userId);
     }
 
