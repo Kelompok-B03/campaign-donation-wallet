@@ -4,6 +4,7 @@ import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.dto.DonationReques
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.exception.ExternalServiceException;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service.DonationService;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.exception.InsufficientBalanceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,8 +37,6 @@ public class DonationController {
                     request.getMessage()
             );
             return new ResponseEntity<>(donation, HttpStatus.CREATED);
-        } catch (ExternalServiceException e) {
-            return new ResponseEntity<>(e.getMessage(), e.getStatus());
         } catch (RuntimeException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
