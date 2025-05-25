@@ -25,6 +25,7 @@ public class Campaign {
     private String fundraiserId;
     private String status;
     private Boolean withdrawed;
+    private String usageProofLink;
 
     public void setStatus(String status) {
         if (CampaignStatus.contains(status)) {

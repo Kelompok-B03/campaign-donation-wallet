@@ -2,6 +2,7 @@ package id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.service;
 
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model.Campaign;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.repository.CampaignRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,5 +49,13 @@ public class CampaignServiceImpl implements CampaignService {
     @Override
     public List<Campaign> findCampaignsByStatus(String status) {
         return campaignRepository.findByStatus(status);
+    }
+
+    public void updateUsageProofLink(String campaignId, String usageProofLink) {
+        Campaign campaign = campaignRepository.findById(campaignId)
+                .orElseThrow(() -> new EntityNotFoundException("Campaign tidak ditemukan"));
+
+        campaign.setUsageProofLink(usageProofLink);
+        campaignRepository.save(campaign);
     }
 }

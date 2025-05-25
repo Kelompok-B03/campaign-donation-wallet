@@ -92,6 +92,18 @@ public class CampaignController {
         return campaignService.findCampaignsByStatus(status);
     }
 
+    @PatchMapping("/{campaignId}/usage-proof")
+    @PreAuthorize("isAuthenticated()")
+    public void uploadUsageProofLink(@PathVariable String campaignId, @RequestBody String usageProofLink, Authentication authentication) {
+        Campaign existing = campaignService.findById(campaignId);
+        if (existing == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Campaign not found");
+        }
+        validateUserAccess(existing.getFundraiserId(), authentication);
+        campaignService.updateUsageProofLink(campaignId, usageProofLink);
+    }
+
+
     private void validateUserAccess(String ownerId, Authentication authentication) {
         if (authentication instanceof JwtAuthenticationToken jwtToken) {
             String userIdFromToken = jwtToken.getToken().getClaimAsString("userId");

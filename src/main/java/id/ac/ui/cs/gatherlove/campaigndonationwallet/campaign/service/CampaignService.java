@@ -19,4 +19,6 @@ public interface CampaignService {
     void update(Campaign campaign);
 
     List<Campaign> findCampaignsByStatus(String status);
+
+    void updateUsageProofLink(String campaignId, String usageProofLink);
 }
