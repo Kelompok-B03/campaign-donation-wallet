@@ -20,6 +20,8 @@ public class Donation {
     private UUID userId;
     private String campaignId;
     private Float amount;
+
+    @Column(nullable = true)
     private String message;
     private Date createdAt;
 

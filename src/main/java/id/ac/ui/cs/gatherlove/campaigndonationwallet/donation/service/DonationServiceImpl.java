@@ -1,11 +1,14 @@
 package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service;
 
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model.Campaign;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.exception.ExternalServiceException;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.repository.DonationRepository;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.repository.CampaignRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,7 +45,7 @@ public class DonationServiceImpl implements DonationService {
     public Donation createDonation(String campaignId, Float amount, String message) {
         // Get user ID from JWT token
         Jwt jwt = getCurrentJwt();
-        UUID userId = UUID.fromString(jwt.getSubject());
+        UUID userId = UUID.fromString(jwt.getClaimAsString("userId"));
         String token = jwt.getTokenValue();
 
         if (amount <= 0) throw new IllegalArgumentException("Amount must be positive");
@@ -56,15 +59,19 @@ public class DonationServiceImpl implements DonationService {
 
         // Send request to payment
         ResponseEntity<String> paymentResponse = requestWebClient.post()
-            .uri("/api/donate")
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-            .bodyValue(requestBody)
-            .retrieve()
-            .onStatus(response -> response.isError(), clientResponse ->
-                clientResponse.bodyToMono(String.class)
-                .flatMap(errorMessage -> Mono.error(new RuntimeException("Error: " + errorMessage))))
-            .toEntity(String.class)
-            .block();
+                .uri("/api/donate")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .bodyValue(requestBody)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, clientResponse ->
+                    clientResponse.bodyToMono(String.class)
+                        .flatMap(errorMessage -> {
+                            HttpStatus status = HttpStatus.valueOf(clientResponse.statusCode().value());
+                            return Mono.error(new ExternalServiceException(errorMessage, status));
+                        })
+                )
+                .toEntity(String.class)
+                .block();
 
         // Create donation if payment succeed
         if (paymentResponse.getStatusCode().is2xxSuccessful()) {
