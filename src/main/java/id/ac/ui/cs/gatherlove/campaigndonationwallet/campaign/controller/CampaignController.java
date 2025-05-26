@@ -98,7 +98,7 @@ public class CampaignController {
         return campaignService.findCampaignsByStatus(status);
     }
 
-    @PatchMapping("/{campaignId}/usage-proof")
+    @PostMapping("/{campaignId}/usage-proof")
     @PreAuthorize("isAuthenticated()")
     public void uploadUsageProofLink(@PathVariable String campaignId, @RequestBody String usageProofLink, Authentication authentication) {
         Campaign existing = campaignService.findById(campaignId);
@@ -109,7 +109,7 @@ public class CampaignController {
         campaignService.updateUsageProofLink(campaignId, usageProofLink);
     }
 
-    @PatchMapping("/{campaignId}/upgrade-status")
+    @PostMapping("/{campaignId}/upgrade-status")
     @PreAuthorize("hasRole('ADMIN')")
     public void upgradeCampaignStatus(@PathVariable String campaignId) {
         try {

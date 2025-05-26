@@ -9,7 +9,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -204,5 +206,58 @@ public class CampaignControllerTest {
         assertEquals(1, result.size());
         assertEquals("Save Oceans", result.get(0).getTitle());
     }
+
+    @Test
+    public void testCreateCampaign_Happy() {
+        JwtAuthenticationToken jwt = mockJwt("user123", false);
+        Campaign campaign = new Campaign();
+        campaign.setTitle("New Campaign");
+
+        ResponseEntity<Campaign> response = campaignController.createCampaign(campaign, jwt);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("user123", response.getBody().getFundraiserId());
+        assertEquals("SEDANG_BERLANGSUNG", response.getBody().getStatus());
+        assertFalse(response.getBody().getWithdrawed());
+    }
+
+    @Test
+    public void testUpdateCampaign_NotFound() {
+        JwtAuthenticationToken jwt = mockJwt("user123", false);
+        when(campaignService.findById("notexist")).thenReturn(null);
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
+                campaignController.updateCampaign("notexist", new Campaign(), jwt));
+
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    }
+
+    @Test
+    public void testDeleteCampaign_Unauthorized() {
+        JwtAuthenticationToken jwt = mockJwt("anotherUser", false);
+        when(campaignService.findById("123")).thenReturn(sampleCampaign);
+
+        SecurityException ex = assertThrows(SecurityException.class, () ->
+                campaignController.deleteCampaign("123", jwt));
+
+        assertEquals("Access denied", ex.getMessage());
+    }
+
+    @Test
+    public void testGetAllCampaigns() {
+        when(campaignService.findAll()).thenReturn(List.of(sampleCampaign));
+        List<Campaign> result = campaignController.getAllCampaigns();
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    public void testValidateUserAccess_InvalidAuthentication() {
+        Authentication auth = mock(Authentication.class);
+        SecurityException ex = assertThrows(SecurityException.class, () ->
+                campaignController.getCampaignsByUserId("user123", auth));
+        assertEquals("Invalid authentication", ex.getMessage());
+    }
+
+
 }
 

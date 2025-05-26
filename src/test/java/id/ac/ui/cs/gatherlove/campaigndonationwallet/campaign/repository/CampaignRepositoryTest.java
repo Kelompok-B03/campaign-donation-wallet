@@ -20,59 +20,77 @@ class CampaignRepositoryTest {
     @Mock
     private CampaignRepository campaignRepository;
 
-    private Campaign campaign;
+    private Campaign campaign1;
+    private Campaign campaign2;
 
     @BeforeEach
     void setUp() {
-        campaign = new Campaign();
-        campaign.setCampaignId("abc123");
-        campaign.setTitle("Test Campaign");
-        campaign.setFundraiserId("user123");
-        campaign.setStatus("MENUNGGU_VERIFIKASI");
-        campaign.setStartDate(LocalDate.now());
-        campaign.setEndDate(LocalDate.now().plusDays(10));
+        campaign1 = new Campaign();
+        campaign1.setCampaignId("abc123");
+        campaign1.setTitle("Campaign One");
+        campaign1.setFundraiserId("user123");
+        campaign1.setStatus("MENUNGGU_VERIFIKASI");
+        campaign1.setStartDate(LocalDate.now());
+        campaign1.setEndDate(LocalDate.now().plusDays(5));
+
+        campaign2 = new Campaign();
+        campaign2.setCampaignId("def456");
+        campaign2.setTitle("Campaign Two");
+        campaign2.setFundraiserId("user123");
+        campaign2.setStatus("SELESAI");
+        campaign2.setStartDate(LocalDate.now().minusDays(10));
+        campaign2.setEndDate(LocalDate.now().minusDays(1));
     }
 
     @Test
-    void testFindById() {
-        when(campaignRepository.findById("abc123")).thenReturn(Optional.of(campaign));
+    void testFindById_Found() {
+        when(campaignRepository.findById("abc123")).thenReturn(Optional.of(campaign1));
 
         Optional<Campaign> result = campaignRepository.findById("abc123");
 
         assertTrue(result.isPresent());
-        assertEquals("Test Campaign", result.get().getTitle());
-        verify(campaignRepository, times(1)).findById("abc123");
+        assertEquals("Campaign One", result.get().getTitle());
+        verify(campaignRepository).findById("abc123");
     }
 
     @Test
-    void testFindByFundraiserId() {
-        when(campaignRepository.findByFundraiserId("user123")).thenReturn(List.of(campaign));
+    void testFindById_NotFound() {
+        when(campaignRepository.findById("notfound")).thenReturn(Optional.empty());
+
+        Optional<Campaign> result = campaignRepository.findById("notfound");
+
+        assertFalse(result.isPresent());
+        verify(campaignRepository).findById("notfound");
+    }
+
+    @Test
+    void testFindByFundraiserId_MultipleCampaigns() {
+        when(campaignRepository.findByFundraiserId("user123")).thenReturn(List.of(campaign1, campaign2));
 
         List<Campaign> result = campaignRepository.findByFundraiserId("user123");
 
-        assertEquals(1, result.size());
-        assertEquals("user123", result.get(0).getFundraiserId());
-        verify(campaignRepository, times(1)).findByFundraiserId("user123");
+        assertEquals(2, result.size());
+        verify(campaignRepository).findByFundraiserId("user123");
     }
 
     @Test
-    void testFindByStatus() {
-        when(campaignRepository.findByStatus("MENUNGGU_VERIFIKASI")).thenReturn(List.of(campaign));
+    void testFindByStatus_SingleCampaign() {
+        when(campaignRepository.findByStatus("MENUNGGU_VERIFIKASI")).thenReturn(List.of(campaign1));
 
         List<Campaign> result = campaignRepository.findByStatus("MENUNGGU_VERIFIKASI");
 
-        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
         assertEquals("MENUNGGU_VERIFIKASI", result.get(0).getStatus());
-        verify(campaignRepository, times(1)).findByStatus("MENUNGGU_VERIFIKASI");
+        verify(campaignRepository).findByStatus("MENUNGGU_VERIFIKASI");
     }
 
     @Test
-    void testFindByIdNotFound() {
-        when(campaignRepository.findById("nonexistent")).thenReturn(Optional.empty());
+    void testFindByStatus_NoCampaigns() {
+        when(campaignRepository.findByStatus("INVALID")).thenReturn(List.of());
 
-        Optional<Campaign> result = campaignRepository.findById("nonexistent");
+        List<Campaign> result = campaignRepository.findByStatus("INVALID");
 
         assertTrue(result.isEmpty());
-        verify(campaignRepository, times(1)).findById("nonexistent");
+        verify(campaignRepository).findByStatus("INVALID");
     }
 }
