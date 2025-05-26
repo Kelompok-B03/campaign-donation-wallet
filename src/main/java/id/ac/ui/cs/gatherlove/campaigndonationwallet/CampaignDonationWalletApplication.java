@@ -11,7 +11,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 public class CampaignDonationWalletApplication {
 
     public static void main(String[] args) {
-        Dotenv dotenv = Dotenv.configure().directory("./").filename(".env").load();
+        Dotenv dotenv = Dotenv.configure().directory("./").filename(".env").ignoreIfMissing().load();
         
         // Database properties
         System.setProperty("DB_HOST", dotenv.get("DB_HOST"));
