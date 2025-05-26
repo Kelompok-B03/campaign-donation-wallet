@@ -1,1 +1,1 @@
-web: java -jar build/libs/gatherlove-auth.jar --spring.profiles.active=staging
+web: java -jar build/libs/campaign-donation-wallet.jar --spring.profiles.active=staging

@@ -6,6 +6,7 @@ import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.dto.DonationReques
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.FinishedState;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service.DonationService;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.security.JwtValidationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.UUID;
 import java.util.Arrays;
@@ -26,6 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.hasSize;
 
+@ActiveProfiles("test")
 @WebMvcTest(DonationController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class DonationControllerTest {
@@ -34,6 +38,9 @@ class DonationControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockBean
+    private JwtValidationService jwtValidationService;
 
     @MockBean
     private DonationService donationService;
@@ -72,6 +79,7 @@ class DonationControllerTest {
         donationRequest.setMessage("Test donation");
     }
 
+    @WithMockUser(roles = "DONOR")
     @Test
     void testCreateDonation() throws Exception {
         when(donationService.createDonation(
@@ -94,6 +102,7 @@ class DonationControllerTest {
         verify(donationService).createDonation(campaignId, 100.0f, "Test donation");
     }
 
+    @WithMockUser(roles = "DONOR")
     @Test
     void testCreateDonationWithInvalidAmount() throws Exception {
         // Set invalid amount
@@ -112,6 +121,7 @@ class DonationControllerTest {
                 .andExpect(jsonPath("$.message").value("Amount must be positive"));
     }
 
+    @WithMockUser
     @Test
     void testUpdateDonationStatus() throws Exception {
         // Setup updated donation with Finished state
@@ -129,6 +139,7 @@ class DonationControllerTest {
         verify(donationService).updateStatus(donationId);
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void testDeleteDonation() throws Exception {
         doNothing().when(donationService).deleteDonation(donationId);
@@ -139,6 +150,7 @@ class DonationControllerTest {
         verify(donationService).deleteDonation(donationId);
     }
 
+    @WithMockUser(roles = "ADMIN")
     @Test
     void testDeleteNonExistentDonation() throws Exception {
         UUID nonExistentId = UUID.randomUUID();
@@ -151,6 +163,7 @@ class DonationControllerTest {
                 .andExpect(jsonPath("$.message").value("Donation not found"));
     }
 
+    @WithMockUser
     @Test
     void testGetDonationById() throws Exception {
         when(donationService.getDonationById(donationId)).thenReturn(testDonation);
@@ -166,6 +179,7 @@ class DonationControllerTest {
         verify(donationService).getDonationById(donationId);
     }
 
+    @WithMockUser
     @Test
     void testGetDonationByIdNotFound() throws Exception {
         when(donationService.getDonationById(donationId))
@@ -178,6 +192,7 @@ class DonationControllerTest {
         verify(donationService).getDonationById(donationId);
     }
 
+    @WithMockUser
     @Test
     void testGetDonationsByUserId() throws Exception {
         when(donationService.getDonationsByUserId(userId)).thenReturn(userDonations);
@@ -192,6 +207,7 @@ class DonationControllerTest {
         verify(donationService).getDonationsByUserId(userId);
     }
 
+    @WithMockUser
     @Test
     void testGetDonationsByCampaignId() throws Exception {
         when(donationService.getDonationsByCampaignId(campaignId)).thenReturn(campaignDonations);
@@ -204,5 +220,30 @@ class DonationControllerTest {
                 .andExpect(jsonPath("$[2].campaignId").value(campaignId.toString()));
 
         verify(donationService).getDonationsByCampaignId(campaignId);
+    }
+
+    @Test
+    @WithMockUser(roles = "DONOR") // Simulates a logged-in user with role DONOR
+    void testGetSelfDonations_Success() throws Exception {
+        when(donationService.getSelfDonations()).thenReturn(userDonations);
+
+        mockMvc.perform(get("/api/donations/self"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$[0].userId").value(userId.toString()))
+                .andExpect(jsonPath("$[0].amount").value(50.0f))
+                .andExpect(jsonPath("$[1].userId").value(userId.toString()))
+                .andExpect(jsonPath("$[1].amount").value(75.0f));
+    }
+
+    @Test
+    @WithMockUser(roles = "DONOR")
+    void testGetSelfDonations_Failure() throws Exception {
+        when(donationService.getSelfDonations()).thenThrow(new RuntimeException("Something failed"));
+
+        mockMvc.perform(get("/api/donations/self"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("An unexpected error occurred"));
     }
 }

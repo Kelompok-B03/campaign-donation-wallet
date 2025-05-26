@@ -63,6 +63,7 @@ dependencies {
     implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
     testImplementation("com.h2database:h2")
     testImplementation("org.assertj:assertj-core:3.24.2")
+    testImplementation("org.springframework.security:spring-security-test")
 
     // JJwt
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
