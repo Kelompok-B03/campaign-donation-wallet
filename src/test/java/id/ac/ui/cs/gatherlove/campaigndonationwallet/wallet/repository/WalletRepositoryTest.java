@@ -1,38 +1,56 @@
 package id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.repository;
 
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.model.Wallet;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.repository.WalletRepository;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@DataJpaTest
+@ExtendWith(MockitoExtension.class)
 class WalletRepositoryTest {
 
-    @Autowired
+    @Mock
     private WalletRepository walletRepository;
 
-    @Test
-    @DisplayName("Should find wallet by userId")
-    void testFindByUserId() {
-        UUID userId = UUID.randomUUID();
-        Wallet wallet = Wallet.builder()
+    private Wallet wallet;
+    private UUID userId;
+
+    @BeforeEach
+    void setUp() {
+        userId = UUID.randomUUID();
+        wallet = Wallet.builder()
                 .userId(userId)
                 .balance(BigDecimal.valueOf(1000))
                 .build();
-        walletRepository.save(wallet);
+    }
+
+    @Test
+    void testFindByUserId() {
+        when(walletRepository.findByUserId(userId)).thenReturn(Optional.of(wallet));
 
         Optional<Wallet> result = walletRepository.findByUserId(userId);
 
-        assertThat(result).isPresent();
-        assertThat(result.get().getBalance()).isEqualTo(BigDecimal.valueOf(1000));
-        assertThat(result.get().getUserId()).isEqualTo(userId);
+        assertTrue(result.isPresent());
+        assertEquals(userId, result.get().getUserId());
+        assertEquals(BigDecimal.valueOf(1000), result.get().getBalance());
+        verify(walletRepository, times(1)).findByUserId(userId);
+    }
+
+    @Test
+    void testFindByUserId_NotFound() {
+        when(walletRepository.findByUserId(userId)).thenReturn(Optional.empty());
+
+        Optional<Wallet> result = walletRepository.findByUserId(userId);
+
+        assertTrue(result.isEmpty());
+        verify(walletRepository, times(1)).findByUserId(userId);
     }
 }
