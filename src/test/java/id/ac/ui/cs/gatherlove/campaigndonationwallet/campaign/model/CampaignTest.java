@@ -19,7 +19,7 @@ public class CampaignTest {
         campaign.setStartDate(LocalDate.of(2025, 1, 1));
         campaign.setEndDate(LocalDate.of(2025, 12, 31));
         campaign.setFundraiserId("user123");
-        campaign.setStatus("active");
+        campaign.setStatus("MENUNGGU_VERIFIKASI");
 
         assertEquals("abc123", campaign.getCampaignId());
         assertEquals("Save the Earth", campaign.getTitle());
@@ -29,6 +29,6 @@ public class CampaignTest {
         assertEquals(LocalDate.of(2025, 1, 1), campaign.getStartDate());
         assertEquals(LocalDate.of(2025, 12, 31), campaign.getEndDate());
         assertEquals("user123", campaign.getFundraiserId());
-        assertEquals("active", campaign.getStatus());
+        assertEquals("MENUNGGU_VERIFIKASI", campaign.getStatus());
     }
 }

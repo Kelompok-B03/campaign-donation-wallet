@@ -6,7 +6,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service.DonationService;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,6 +22,9 @@ public class CampaignServiceImplTest {
 
     @InjectMocks
     private CampaignServiceImpl campaignService;
+
+    @Mock
+    private DonationService donationService;
 
     private Campaign campaign;
 
@@ -53,12 +58,25 @@ public class CampaignServiceImplTest {
 
     @Test
     public void testFindById_Happy() {
+        Campaign campaign = new Campaign();
+        campaign.setCampaignId("test-id");
+        campaign.setTitle("Save Oceans");
+        campaign.setEndDate(LocalDate.now().minusDays(1)); // Sudah lewat
+        campaign.setStatus("SEDANG_BERLANGSUNG"); // Belum selesai
+
         when(campaignRepository.findById("test-id")).thenReturn(Optional.of(campaign));
+        when(campaignRepository.save(any(Campaign.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Campaign result = campaignService.findById("test-id");
+
         assertNotNull(result);
         assertEquals("Save Oceans", result.getTitle());
+        assertEquals("SELESAI", result.getStatus()); // ✅ status seharusnya diubah
+
+        verify(campaignRepository).save(any(Campaign.class));
+        verify(donationService).updateStatusByCampaign("test-id");
     }
+
 
     @Test
     public void testFindById_Unhappy() {
