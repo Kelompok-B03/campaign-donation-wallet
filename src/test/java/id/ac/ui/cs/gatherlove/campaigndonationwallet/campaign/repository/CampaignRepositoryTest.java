@@ -23,6 +23,7 @@ public class CampaignRepositoryTest {
         campaign.setFundraiserId("user1");
         campaign.setStartDate(LocalDate.now());
         campaign.setEndDate(LocalDate.now().plusDays(30));
+        campaign.setStatus("MENUNGGU_VERIFIKASI");
 
         Campaign saved = campaignRepository.save(campaign);
 
@@ -35,10 +36,12 @@ public class CampaignRepositoryTest {
         Campaign campaign1 = new Campaign();
         campaign1.setTitle("Campaign A");
         campaign1.setFundraiserId("user1");
+        campaign1.setStatus("MENUNGGU_VERIFIKASI");
 
         Campaign campaign2 = new Campaign();
         campaign2.setTitle("Campaign B");
         campaign2.setFundraiserId("user2");
+        campaign2.setStatus("MENUNGGU_VERIFIKASI");
 
         campaignRepository.save(campaign1);
         campaignRepository.save(campaign2);
