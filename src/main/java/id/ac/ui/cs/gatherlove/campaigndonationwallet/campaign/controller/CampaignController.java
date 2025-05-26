@@ -34,7 +34,7 @@ public class CampaignController {
     public ResponseEntity<Campaign> createCampaign(@RequestBody Campaign campaign, Authentication authentication) {
         String userId = getUserIdFromToken(authentication);
         campaign.setFundraiserId(userId);
-        campaign.setStatus("MENUNGGU_VERIFIKASI");
+        campaign.setStatus("SEDANG_BERLANGSUNG");
         campaign.setWithdrawed(false);
 
         CreateCampaignCommand createCommand = new CreateCampaignCommand(campaignService, campaign);
