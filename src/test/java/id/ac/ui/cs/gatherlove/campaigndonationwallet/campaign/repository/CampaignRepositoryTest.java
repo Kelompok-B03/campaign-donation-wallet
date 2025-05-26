@@ -75,4 +75,25 @@ class CampaignRepositoryTest {
         assertTrue(result.isEmpty());
         verify(campaignRepository, times(1)).findById("nonexistent");
     }
+
+    @Test
+    void testFindByStatus() {
+        when(campaignRepository.findByStatus("MENUNGGU_VERIFIKASI")).thenReturn(List.of(campaign));
+
+        List<Campaign> result = campaignRepository.findByStatus("MENUNGGU_VERIFIKASI");
+
+        assertFalse(result.isEmpty());
+        assertEquals("MENUNGGU_VERIFIKASI", result.get(0).getStatus());
+        verify(campaignRepository, times(1)).findByStatus("MENUNGGU_VERIFIKASI");
+    }
+
+    @Test
+    void testFindByIdNotFound() {
+        when(campaignRepository.findById("nonexistent")).thenReturn(Optional.empty());
+
+        Optional<Campaign> result = campaignRepository.findById("nonexistent");
+
+        assertTrue(result.isEmpty());
+        verify(campaignRepository, times(1)).findById("nonexistent");
+    }
 }
