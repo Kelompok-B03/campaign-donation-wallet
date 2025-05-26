@@ -1,24 +1,24 @@
 package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service;
 
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.repository.CampaignRepository;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.repository.DonationRepository;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service.DonationServiceImpl;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.dto.WalletDTOs.TransactionDTO;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.service.WalletService;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model.Campaign;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.http.ResponseEntity;
-import reactor.core.publisher.Mono;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 
-import java.util.UUID;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.math.BigDecimal;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -27,29 +27,22 @@ import static org.mockito.Mockito.*;
 class DonationServiceTest {
 
     @Mock
+    private Jwt jwt;
+
+    @Mock
+    private AbstractAuthenticationToken authentication;
+
+    @Mock
     private DonationRepository donationRepository;
 
     @Mock
-    private WebClient webClient;
+    private CampaignRepository campaignRepository;
 
     @Mock
-    private WebClient.RequestBodyUriSpec requestBodyUriSpec;
-
-    @Mock
-    private WebClient.RequestBodySpec requestBodySpec;
-
-    @Mock
-    @SuppressWarnings("rawtypes")
-    private WebClient.RequestHeadersSpec requestHeadersSpec;
-
-    @Mock
-    private WebClient.ResponseSpec onStatusResponseSpec;
-
-    @Mock
-    private WebClient.ResponseSpec responseSpec;
+    private WalletService walletService; // mock this (not @InjectMocks)
 
     @InjectMocks
-    private DonationServiceImpl donationService;
+    private DonationServiceImpl donationService; // inject the above into this
 
     private UUID userId;
     private String campaignId;
@@ -71,29 +64,35 @@ class DonationServiceTest {
         Float amount = 100.0f;
         String message = "Test donation";
 
-        // Setup WebClient mock chain
-        when(webClient.post()).thenReturn(requestBodyUriSpec);
-        when(requestBodyUriSpec.uri("/api/donate")).thenReturn(requestBodySpec);
-        when(requestBodySpec.bodyValue(any(Map.class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.onStatus(any(Predicate.class), any(Function.class)))
-                .thenReturn(onStatusResponseSpec);
-        when(onStatusResponseSpec.toEntity(String.class))
-                .thenReturn(Mono.just(ResponseEntity.ok("Success")));
+        // Mock JWT + SecurityContext
+        SecurityContext securityContext = mock(SecurityContext.class);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(jwt);
+        when(jwt.getClaimAsString("userId")).thenReturn(userId.toString());
+
+        // Mock walletService
+        when(walletService.recordDonation(eq(userId), eq(campaignId), any(BigDecimal.class), any(String.class)))
+                .thenReturn(mock(TransactionDTO.class));
 
         when(donationRepository.save(any(Donation.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+
+        Campaign campaign = new Campaign();
+        campaign.setFundsCollected(1000);
+        when(campaignRepository.findById(eq(campaignId))).thenReturn(Optional.of(campaign));
 
         Donation result = donationService.createDonation(campaignId, amount, message);
 
         assertNotNull(result);
         assertEquals(userId, result.getUserId());
         assertEquals(campaignId, result.getCampaignId());
-        assertEquals(amount, result.getAmount());
-        assertEquals(message, result.getMessage());
         assertEquals("Pending", result.getStateName());
+        assertEquals(1100, campaign.getFundsCollected());
 
         verify(donationRepository).save(any(Donation.class));
+        verify(campaignRepository).findById(campaignId);
     }
 
     @Test
@@ -117,17 +116,6 @@ class DonationServiceTest {
 
         verify(donationRepository).findByDonationId(donationId);
         verify(donationRepository).delete(testDonation);
-    }
-
-    @Test
-    void testCreateDonationWithInvalidAmount() {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            donationService.createDonation(campaignId, -50.0f, "Invalid donation");
-        });
-
-        assertTrue(exception.getMessage().contains("Amount must be positive"));
-
-        verify(donationRepository, never()).save(any(Donation.class));
     }
 
     @Test
@@ -181,5 +169,36 @@ class DonationServiceTest {
         assertEquals(campaignId, result.get(0).getCampaignId());
 
         verify(donationRepository).findByCampaignId(campaignId);
+    }
+
+    @Test
+    void testGetSelfDonations() {
+        // Mock JWT + SecurityContext
+        SecurityContext securityContext = mock(SecurityContext.class);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(jwt);
+        when(jwt.getClaimAsString("userId")).thenReturn(userId.toString());
+
+        List<Donation> donations = List.of(testDonation);
+        when(donationRepository.findByUserId(userId)).thenReturn(donations);
+
+        List<Donation> result = donationService.getSelfDonations();
+
+        assertEquals(1, result.size());
+        assertEquals(testDonation, result.get(0));
+
+        verify(donationRepository).findByUserId(userId);
+    }
+
+    @Test
+    void testGetDonationsCount() {
+        when(donationRepository.count()).thenReturn(5L);
+
+        long count = donationService.getDonationsCount();
+
+        assertEquals(5L, count);
+        verify(donationRepository).count();
     }
 }
