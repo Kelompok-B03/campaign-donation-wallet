@@ -223,7 +223,7 @@ class DonationControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "DONOR") // Simulates a logged-in user with role DONOR
+    @WithMockUser(roles = "DONOR")
     void testGetSelfDonations_Success() throws Exception {
         when(donationService.getSelfDonations()).thenReturn(userDonations);
 

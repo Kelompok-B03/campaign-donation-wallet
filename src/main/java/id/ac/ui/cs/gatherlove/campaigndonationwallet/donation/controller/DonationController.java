@@ -1,7 +1,6 @@
 package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.controller;
 
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.dto.DonationRequest;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.exception.ExternalServiceException;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service.DonationService;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.exception.InsufficientBalanceException;

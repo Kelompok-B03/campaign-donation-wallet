@@ -39,6 +39,14 @@ public class DonationTest {
     }
 
     @Test
+    void testStateNameSynchronization() {
+        Donation donation = new Donation(userId, campaignId, 100f, null);
+        donation.setState(new FinishedState());
+
+        assertEquals("Finished", donation.getStateName());
+    }
+
+    @Test
     void testNullUserOrCampaignThrowsException() {
         assertThrows(NullPointerException.class, () -> {
             new Donation(null, campaignId, 100f, null);
@@ -47,6 +55,15 @@ public class DonationTest {
         assertThrows(NullPointerException.class, () -> {
             new Donation(userId, null, 100f, null);
         });
+    }
+
+    @Test
+    void testInitializeStateWithFinished() {
+        Donation donation = new Donation(userId, campaignId, 100f, null);
+        donation.setStateName("Finished");
+        donation.initializeState();
+
+        assertTrue(donation.getState() instanceof FinishedState);
     }
 
     @Test
