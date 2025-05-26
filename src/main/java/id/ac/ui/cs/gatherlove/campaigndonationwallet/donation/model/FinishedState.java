@@ -6,12 +6,7 @@ public class FinishedState implements DonationState {
 
     @Override
     public void updateStatus() {
-        // No-op
-    }
-
-    @Override
-    public void cancel() {
-        throw new IllegalStateException("Cannot cancel a finished donation");
+        throw new IllegalStateException("Donation status is already 'Finished' and cannot be updated further.");
     }
 
     @Override

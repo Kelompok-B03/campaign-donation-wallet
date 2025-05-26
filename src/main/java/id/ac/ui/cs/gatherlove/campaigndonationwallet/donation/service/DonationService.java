@@ -6,11 +6,13 @@ import java.util.UUID;
 import java.util.List;
 
 public interface DonationService {
-    Donation createDonation(UUID userId, UUID campaignId, Float amount, String message);
+    Donation createDonation(String campaignId, Float amount, String message);
     Donation updateStatus(UUID donationId);
-    Donation cancelDonation(UUID donationId);
+    List<Donation> updateStatusByCampaign(String campaignId);
     void deleteDonation(UUID donationId);
     Donation getDonationById(UUID donationId);
     List<Donation> getDonationsByUserId(UUID userId);
-    List<Donation> getDonationsByCampaignId(UUID campaignId);
+    List<Donation> getDonationsByCampaignId(String campaignId);
+    List<Donation> getSelfDonations();
+    long getDonationsCount();
 }

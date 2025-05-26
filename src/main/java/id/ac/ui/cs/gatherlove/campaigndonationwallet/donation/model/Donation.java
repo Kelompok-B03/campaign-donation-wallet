@@ -3,6 +3,7 @@ package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.UUID;
 
@@ -17,9 +18,10 @@ public class Donation {
     private UUID donationId;
 
     private UUID userId;
-    private UUID campaignId;
-
+    private String campaignId;
     private Float amount;
+
+    @Column(nullable = true)
     private String message;
     private Date createdAt;
 
@@ -28,7 +30,7 @@ public class Donation {
 
     private String stateName;
 
-    public Donation(UUID userId, UUID campaignId, Float amount, String message) {
+    public Donation(UUID userId, String campaignId, Float amount, String message) {
         if (userId == null || campaignId == null) throw new NullPointerException("User ID and Campaign ID must not be null");
         if (amount == null || amount <= 0) throw new IllegalArgumentException("Amount must be positive");
 
@@ -61,16 +63,9 @@ public class Donation {
             case "Finished":
                 setState(new FinishedState());
                 break;
-            case "Cancelled":
-                setState(new CancelledState());
-                break;
             default:
                 throw new IllegalStateException("Unknown state: " + stateName);
         }
-    }
-
-    public void cancel() {
-        getState().cancel();
     }
 }
 
