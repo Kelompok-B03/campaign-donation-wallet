@@ -33,7 +33,7 @@ public class SecurityConfig {
             // Use CSRF protection with cookies
 //            .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
             .csrf(csrf -> csrf.disable())
-//            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints that don't need authentication
                 .requestMatchers("/api/wallet/public/**").permitAll()
@@ -45,6 +45,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/campaign").authenticated()
                 .requestMatchers("/api/campaign").permitAll() // GET semua campaign
                 .requestMatchers("/api/campaign/{id}").permitAll() // GET by ID
+                .requestMatchers("/api/campaign/**").authenticated()
 
                 .requestMatchers("/api/donations/**").authenticated()
             )
@@ -60,7 +61,6 @@ public class SecurityConfig {
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token", "x-xsrf-token"));
         configuration.setExposedHeaders(Arrays.asList("x-auth-token", "x-xsrf-token"));
-        configuration.setAllowCredentials(true);  // Important for CSRF cookies
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
