@@ -12,6 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.mockito.Mockito;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -97,5 +99,53 @@ class ExceptionsTest {
         assertEquals(500, response.getBody().getStatus());
         assertTrue(response.getBody().getMessage().contains("Something went wrong"));
         assertNotNull(response.getBody().getTimestamp());
+    }
+
+    @Test
+    void testHandleAuthenticationException() {
+        GlobalExceptionHandler handler = new GlobalExceptionHandler();
+        AuthenticationException ex = new AuthenticationException("Auth failed") {};
+        ResponseEntity<Map<String, String>> response = handler.handleAuthenticationException(ex);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Authentication failed", response.getBody().get("error"));
+        assertEquals("Auth failed", response.getBody().get("message"));
+    }
+
+    @Test
+    void testHandleAccessDeniedException() {
+        GlobalExceptionHandler handler = new GlobalExceptionHandler();
+        AccessDeniedException ex = new AccessDeniedException("Access denied here");
+        ResponseEntity<Map<String, String>> response = handler.handleAccessDeniedException(ex);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals("Access denied", response.getBody().get("error"));
+        assertEquals("Access denied here", response.getBody().get("message"));
+    }
+
+    @Test
+    void testHandleSecurityException() {
+        GlobalExceptionHandler handler = new GlobalExceptionHandler();
+        SecurityException ex = new SecurityException("Security violation!");
+        ResponseEntity<Map<String, String>> response = handler.handleSecurityException(ex);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals("Security violation", response.getBody().get("error"));
+        assertEquals("Security violation!", response.getBody().get("message"));
+    }
+
+    @Test
+    void testErrorResponseSetters() {
+        LocalDateTime now = LocalDateTime.now();
+        GlobalExceptionHandler.ErrorResponse errorResponse = new GlobalExceptionHandler.ErrorResponse(400, "msg", now);
+
+        errorResponse.setStatus(401);
+        errorResponse.setMessage("changed");
+        LocalDateTime newTime = now.plusMinutes(1);
+        errorResponse.setTimestamp(newTime);
+
+        assertEquals(401, errorResponse.getStatus());
+        assertEquals("changed", errorResponse.getMessage());
+        assertEquals(newTime, errorResponse.getTimestamp());
     }
 }
