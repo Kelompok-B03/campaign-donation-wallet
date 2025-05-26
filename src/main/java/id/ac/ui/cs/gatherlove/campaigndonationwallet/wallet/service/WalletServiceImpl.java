@@ -136,12 +136,6 @@ public class WalletServiceImpl implements WalletService {
         if (transaction.getType() != TransactionType.TOP_UP) {
             throw new TransactionNotAllowedException("Only TOP_UP transactions can be deleted");
         }
-
-        wallet.setBalance(wallet.getBalance().subtract(transaction.getAmount()));
-        
-        if (wallet.getBalance().compareTo(BigDecimal.ZERO) < 0) {
-            throw new InsufficientBalanceException("Cannot delete this transaction as it would result in negative balance");
-        }
         
         walletRepository.save(wallet);
 
