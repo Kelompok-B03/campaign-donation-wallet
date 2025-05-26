@@ -2,18 +2,21 @@ package id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.service;
 
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model.Campaign;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.repository.CampaignRepository;
+import id.ac.ui.cs.gatherlove.campaigndonationwallet.wallet.service.WalletService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service.DonationService;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.access.AccessDeniedException;
 
 public class CampaignServiceImplTest {
 
@@ -25,6 +28,9 @@ public class CampaignServiceImplTest {
 
     @Mock
     private DonationService donationService;
+
+    @Mock
+    private WalletService walletService;
 
     private Campaign campaign;
 
@@ -107,4 +113,96 @@ public class CampaignServiceImplTest {
         campaignService.update(campaign);
         verify(campaignRepository, times(1)).save(campaign);
     }
+
+    @Test
+    public void testFindCampaignsByStatus() {
+        when(campaignRepository.findByStatus("SEDANG_BERLANGSUNG")).thenReturn(List.of(campaign));
+
+        List<Campaign> result = campaignService.findCampaignsByStatus("SEDANG_BERLANGSUNG");
+
+        assertEquals(1, result.size());
+        verify(campaignRepository).findByStatus("SEDANG_BERLANGSUNG");
+    }
+
+    @Test
+    public void testUpdateUsageProofLink_Happy() {
+        when(campaignRepository.findById("test-id")).thenReturn(Optional.of(campaign));
+
+        campaignService.updateUsageProofLink("test-id", "https://proof.com");
+
+        verify(campaignRepository).save(campaign);
+        assertEquals("https://proof.com", campaign.getUsageProofLink());
+    }
+
+    @Test
+    public void testUpgradeCampaignStatus_AlreadyActive() {
+        campaign.setStatus("SEDANG_BERLANGSUNG");
+        when(campaignRepository.findById("test-id")).thenReturn(Optional.of(campaign));
+
+        assertThrows(IllegalStateException.class, () -> campaignService.upgradeCampaignStatus("test-id"));
+    }
+
+    @Test
+    public void testWithdrawCampaign_Happy() {
+        campaign.setStatus("SELESAI");
+        campaign.setWithdrawed(false);
+        campaign.setFundsCollected(1000);
+        campaign.setFundraiserId(UUID.randomUUID().toString());
+
+        when(campaignRepository.findById("test-id")).thenReturn(Optional.of(campaign));
+
+        campaignService.withdrawCampaign("test-id");
+
+        verify(walletService).withdrawCampaignFunds(any(UUID.class), eq("test-id"), eq(BigDecimal.valueOf(1000)));
+        verify(campaignRepository).save(campaign);
+        assertTrue(campaign.getWithdrawed());
+    }
+
+    @Test
+    public void testWithdrawCampaign_NotCompleted() {
+        campaign.setStatus("SEDANG_BERLANGSUNG");
+        when(campaignRepository.findById("test-id")).thenReturn(Optional.of(campaign));
+
+        assertThrows(IllegalStateException.class, () -> campaignService.withdrawCampaign("test-id"));
+    }
+
+    @Test
+    public void testWithdrawCampaign_AlreadyWithdrawed() {
+        campaign.setStatus("SELESAI");
+        campaign.setWithdrawed(true);
+        when(campaignRepository.findById("test-id")).thenReturn(Optional.of(campaign));
+
+        assertThrows(IllegalStateException.class, () -> campaignService.withdrawCampaign("test-id"));
+    }
+
+    @Test
+    public void testCompleteCampaign_Happy() {
+        campaign.setStatus("SEDANG_BERLANGSUNG");
+        campaign.setFundraiserId("user123");
+        when(campaignRepository.findById("test-id")).thenReturn(Optional.of(campaign));
+
+        campaignService.completeCampaign("test-id", "user123");
+
+        verify(campaignRepository).save(campaign);
+        verify(donationService).updateStatusByCampaign("test-id");
+        assertEquals("SELESAI", campaign.getStatus());
+    }
+
+    @Test
+    public void testCompleteCampaign_WrongUser() {
+        campaign.setFundraiserId("otherUser");
+        when(campaignRepository.findById("test-id")).thenReturn(Optional.of(campaign));
+
+        assertThrows(AccessDeniedException.class, () -> campaignService.completeCampaign("test-id", "user123"));
+    }
+
+    @Test
+    public void testCompleteCampaign_AlreadyCompleted() {
+        campaign.setFundraiserId("user123");
+        campaign.setStatus("SELESAI");
+        when(campaignRepository.findById("test-id")).thenReturn(Optional.of(campaign));
+
+        assertThrows(IllegalStateException.class, () -> campaignService.completeCampaign("test-id", "user123"));
+    }
+
 }

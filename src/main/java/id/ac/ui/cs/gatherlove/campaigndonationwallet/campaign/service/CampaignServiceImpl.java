@@ -126,7 +126,4 @@ public class CampaignServiceImpl implements CampaignService {
         campaignRepository.save(campaign);
         donationService.updateStatusByCampaign(campaign.getCampaignId());
     }
-
-
-
 }
