@@ -1,7 +1,6 @@
 package id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service;
 
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model.Campaign;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.exception.ExternalServiceException;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.model.Donation;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.repository.DonationRepository;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.repository.CampaignRepository;
