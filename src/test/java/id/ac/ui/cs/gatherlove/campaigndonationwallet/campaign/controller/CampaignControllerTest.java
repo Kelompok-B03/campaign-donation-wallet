@@ -1,152 +1,208 @@
 package id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model.Campaign;
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.service.CampaignService;
-import id.ac.ui.cs.gatherlove.campaigndonationwallet.donation.service.DonationService;
-
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(CampaignController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@ExtendWith(MockitoExtension.class)
 public class CampaignControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @InjectMocks
+    private CampaignController campaignController;
 
-    @MockBean
+    @Mock
     private CampaignService campaignService;
 
-    private Campaign campaign;
+    private Campaign sampleCampaign;
 
     @BeforeEach
-    public void setUp() {
-        campaign = new Campaign();
-        campaign.setCampaignId("CAMP001");
-        campaign.setTitle("Test Campaign");
-        campaign.setDescription("A test campaign");
-        campaign.setTargetAmount(50000);
-        campaign.setFundsCollected(15000);
-        campaign.setStartDate(LocalDate.of(2025, 4, 1));
-        campaign.setEndDate(LocalDate.of(2025, 5, 30));
-        campaign.setFundraiserId("USER123");
-        campaign.setStatus("ONGOING");
+    void setUp() {
+        sampleCampaign = new Campaign();
+        sampleCampaign.setCampaignId("123");
+        sampleCampaign.setTitle("Save Oceans");
+        sampleCampaign.setFundraiserId("user123");
+        sampleCampaign.setStartDate(LocalDate.now());
+        sampleCampaign.setEndDate(LocalDate.now().plusDays(30));
     }
 
-    private static String asJsonString(Object obj) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.findAndRegisterModules();
-            return mapper.writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private JwtAuthenticationToken mockJwt(String userId, boolean isAdmin) {
+        Jwt jwt = Jwt.withTokenValue("token")
+                .claim("userId", userId)
+                .header("alg", "none")
+                .build();
 
-    // HAPPY PATHS
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        if (isAdmin) authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
 
-    @Test
-    public void testGetAllCampaigns() throws Exception {
-        when(campaignService.findAll()).thenReturn(List.of(campaign));
-
-        mockMvc.perform(get("/api/campaign"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].campaignId").value("CAMP001"));
+        return new JwtAuthenticationToken(jwt, authorities);
     }
 
     @Test
-    public void testCreateCampaign() throws Exception {
-        when(campaignService.create(any(Campaign.class))).thenReturn(campaign);
-
-        mockMvc.perform(post("/api/campaign")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(campaign)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Test Campaign"));
+    public void testGetCampaignById_Happy() {
+        when(campaignService.findById("123")).thenReturn(sampleCampaign);
+        Campaign result = campaignController.getCampaignById("123");
+        assertNotNull(result);
+        assertEquals("Save Oceans", result.getTitle());
     }
 
     @Test
-    public void testGetCampaignsByUserId() throws Exception {
-        when(campaignService.findByUserId("USER123")).thenReturn(List.of(campaign));
-
-        mockMvc.perform(get("/api/campaign/user/USER123"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].fundraiserId").value("USER123"));
+    public void testGetCampaignById_NotFound() {
+        when(campaignService.findById("404")).thenReturn(null);
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
+                campaignController.getCampaignById("404"));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
     }
 
     @Test
-    public void testGetCampaignById() throws Exception {
-        when(campaignService.findById("CAMP001")).thenReturn(campaign);
-
-        mockMvc.perform(get("/api/campaign/CAMP001"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.campaignId").value("CAMP001"));
+    public void testWithdrawCampaign_Happy() {
+        JwtAuthenticationToken jwt = mockJwt("user123", false);
+        when(campaignService.findById("123")).thenReturn(sampleCampaign);
+        assertDoesNotThrow(() -> campaignController.withdrawCampaign("123", jwt));
+        verify(campaignService).withdrawCampaign("123");
     }
 
     @Test
-    public void testDeleteCampaign() throws Exception {
-        when(campaignService.findById("CAMP001")).thenReturn(campaign);
-        doNothing().when(campaignService).delete(campaign);
-
-        mockMvc.perform(delete("/api/campaign/CAMP001"))
-                .andExpect(status().isOk());
+    public void testWithdrawCampaign_Unauthorized() {
+        JwtAuthenticationToken jwt = mockJwt("anotherUser", false);
+        when(campaignService.findById("123")).thenReturn(sampleCampaign);
+        SecurityException ex = assertThrows(SecurityException.class, () ->
+                campaignController.withdrawCampaign("123", jwt));
+        assertEquals("Access denied", ex.getMessage());
     }
 
     @Test
-    public void testUpdateCampaign() throws Exception {
-        when(campaignService.findById("CAMP001")).thenReturn(campaign);
-        doNothing().when(campaignService).update(any(Campaign.class));
-
-        mockMvc.perform(put("/api/campaign/CAMP001")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(campaign)))
-                .andExpect(status().isOk());
-    }
-
-    // UNHAPPY PATHS
-
-    @Test
-    public void testGetCampaignByIdNotFound() throws Exception {
-        when(campaignService.findById("CAMP999")).thenReturn(null);
-
-        mockMvc.perform(get("/api/campaign/CAMP999"))
-                .andExpect(status().isNotFound());
+    public void testUpgradeCampaignStatus_Happy() {
+        assertDoesNotThrow(() -> campaignController.upgradeCampaignStatus("123"));
+        verify(campaignService).upgradeCampaignStatus("123");
     }
 
     @Test
-    public void testDeleteCampaignNotFound() throws Exception {
-        when(campaignService.findById("CAMP999")).thenReturn(null);
-
-        mockMvc.perform(delete("/api/campaign/CAMP999"))
-                .andExpect(status().isNotFound());
+    public void testUpgradeCampaignStatus_NotFound() {
+        doThrow(new EntityNotFoundException("Campaign tidak ditemukan"))
+                .when(campaignService).upgradeCampaignStatus("123");
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
+                campaignController.upgradeCampaignStatus("123"));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
     }
 
     @Test
-    public void testUpdateCampaignNotFound() throws Exception {
-        when(campaignService.findById("CAMP999")).thenReturn(null);
+    public void testUpgradeCampaignStatus_InvalidState() {
+        doThrow(new IllegalStateException("Status campaign sudah aktif"))
+                .when(campaignService).upgradeCampaignStatus("123");
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
+                campaignController.upgradeCampaignStatus("123"));
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
 
-        mockMvc.perform(put("/api/campaign/CAMP999")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(campaign)))
-                .andExpect(status().isNotFound());
+    @Test
+    public void testGetCampaignsByUserId_Happy() {
+        JwtAuthenticationToken jwt = mockJwt("user123", false);
+        when(campaignService.findByUserId("user123")).thenReturn(List.of(sampleCampaign));
+        List<Campaign> result = campaignController.getCampaignsByUserId("user123", jwt);
+        assertEquals(1, result.size());
+        assertEquals("Save Oceans", result.get(0).getTitle());
+    }
+
+    @Test
+    public void testGetCampaignsByUserId_Unauthorized() {
+        JwtAuthenticationToken jwt = mockJwt("anotherUser", false);
+        SecurityException ex = assertThrows(SecurityException.class, () ->
+                campaignController.getCampaignsByUserId("user123", jwt));
+        assertEquals("Access denied", ex.getMessage());
+    }
+
+    @Test
+    public void testDeleteCampaign_Happy() {
+        JwtAuthenticationToken jwt = mockJwt("user123", false);
+        when(campaignService.findById("123")).thenReturn(sampleCampaign);
+        assertDoesNotThrow(() -> campaignController.deleteCampaign("123", jwt));
+    }
+
+    @Test
+    public void testDeleteCampaign_NotFound() {
+        when(campaignService.findById("notfound")).thenReturn(null);
+        JwtAuthenticationToken jwt = mockJwt("user123", true);
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
+                campaignController.deleteCampaign("notfound", jwt));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    }
+
+    @Test
+    public void testUpdateCampaign_Happy() {
+        Campaign updated = new Campaign();
+        updated.setTitle("Updated");
+        JwtAuthenticationToken jwt = mockJwt("user123", false);
+        when(campaignService.findById("123")).thenReturn(sampleCampaign);
+        assertDoesNotThrow(() -> campaignController.updateCampaign("123", updated, jwt));
+    }
+
+    @Test
+    public void testUploadUsageProofLink_Happy() {
+        JwtAuthenticationToken jwt = mockJwt("user123", false);
+        when(campaignService.findById("123")).thenReturn(sampleCampaign);
+        assertDoesNotThrow(() -> campaignController.uploadUsageProofLink("123", "https://bukti.com/link", jwt));
+        verify(campaignService).updateUsageProofLink("123", "https://bukti.com/link");
+    }
+
+    @Test
+    public void testUploadUsageProofLink_Unauthorized() {
+        JwtAuthenticationToken jwt = mockJwt("other", false);
+        when(campaignService.findById("123")).thenReturn(sampleCampaign);
+        SecurityException ex = assertThrows(SecurityException.class, () ->
+                campaignController.uploadUsageProofLink("123", "https://link", jwt));
+        assertEquals("Access denied", ex.getMessage());
+    }
+
+    @Test
+    public void testCompleteCampaign_Happy() {
+        JwtAuthenticationToken jwt = mockJwt("user123", false);
+        when(campaignService.findById("123")).thenReturn(sampleCampaign);
+        assertDoesNotThrow(() -> campaignController.completeCampaign("123", jwt));
+        verify(campaignService).completeCampaign("123", "user123");
+    }
+
+    @Test
+    public void testCompleteCampaign_Unauthorized() {
+        JwtAuthenticationToken jwt = mockJwt("otherUser", false);
+        when(campaignService.findById("123")).thenReturn(sampleCampaign);
+        SecurityException ex = assertThrows(SecurityException.class, () ->
+                campaignController.completeCampaign("123", jwt));
+        assertEquals("Access denied", ex.getMessage());
+    }
+
+    @Test
+    public void testCompleteCampaign_NotFound() {
+        JwtAuthenticationToken jwt = mockJwt("user123", false);
+        when(campaignService.findById("123")).thenReturn(null);
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
+                campaignController.completeCampaign("123", jwt));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    }
+
+    @Test
+    public void testGetCampaignsByStatus() {
+        when(campaignService.findCampaignsByStatus("SEDANG_BERLANGSUNG")).thenReturn(List.of(sampleCampaign));
+        List<Campaign> result = campaignController.getCampaignsByStatus("SEDANG_BERLANGSUNG");
+        assertEquals(1, result.size());
+        assertEquals("Save Oceans", result.get(0).getTitle());
     }
 }
+
