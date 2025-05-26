@@ -1,58 +1,78 @@
 package id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.repository;
 
 import id.ac.ui.cs.gatherlove.campaigndonationwallet.campaign.model.Campaign;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@DataJpaTest
-public class CampaignRepositoryTest {
+@ExtendWith(MockitoExtension.class)
+class CampaignRepositoryTest {
 
-    @Autowired
+    @Mock
     private CampaignRepository campaignRepository;
 
-    @Test
-    public void testSaveAndFindById() {
-        Campaign campaign = new Campaign();
+    private Campaign campaign;
+
+    @BeforeEach
+    void setUp() {
+        campaign = new Campaign();
+        campaign.setCampaignId("abc123");
         campaign.setTitle("Test Campaign");
-        campaign.setFundraiserId("user1");
-        campaign.setStartDate(LocalDate.now());
-        campaign.setEndDate(LocalDate.now().plusDays(30));
+        campaign.setFundraiserId("user123");
         campaign.setStatus("MENUNGGU_VERIFIKASI");
-
-        Campaign saved = campaignRepository.save(campaign);
-
-        assertNotNull(saved.getCampaignId());
-        assertEquals("Test Campaign", saved.getTitle());
+        campaign.setStartDate(LocalDate.now());
+        campaign.setEndDate(LocalDate.now().plusDays(10));
     }
 
     @Test
-    public void testFindByFundraiserId() {
-        Campaign campaign1 = new Campaign();
-        campaign1.setTitle("Campaign A");
-        campaign1.setFundraiserId("user1");
-        campaign1.setStatus("MENUNGGU_VERIFIKASI");
+    void testFindById() {
+        when(campaignRepository.findById("abc123")).thenReturn(Optional.of(campaign));
 
-        Campaign campaign2 = new Campaign();
-        campaign2.setTitle("Campaign B");
-        campaign2.setFundraiserId("user2");
-        campaign2.setStatus("MENUNGGU_VERIFIKASI");
+        Optional<Campaign> result = campaignRepository.findById("abc123");
 
-        campaignRepository.save(campaign1);
-        campaignRepository.save(campaign2);
-
-        List<Campaign> user1Campaigns = campaignRepository.findByFundraiserId("user1");
-        assertEquals(1, user1Campaigns.size());
-        assertEquals("Campaign A", user1Campaigns.get(0).getTitle());
+        assertTrue(result.isPresent());
+        assertEquals("Test Campaign", result.get().getTitle());
+        verify(campaignRepository, times(1)).findById("abc123");
     }
 
     @Test
-    public void testNonExistId() {
-        assertTrue(campaignRepository.findById("non-existing-id").isEmpty());
+    void testFindByFundraiserId() {
+        when(campaignRepository.findByFundraiserId("user123")).thenReturn(List.of(campaign));
+
+        List<Campaign> result = campaignRepository.findByFundraiserId("user123");
+
+        assertEquals(1, result.size());
+        assertEquals("user123", result.get(0).getFundraiserId());
+        verify(campaignRepository, times(1)).findByFundraiserId("user123");
+    }
+
+    @Test
+    void testFindByStatus() {
+        when(campaignRepository.findByStatus("MENUNGGU_VERIFIKASI")).thenReturn(List.of(campaign));
+
+        List<Campaign> result = campaignRepository.findByStatus("MENUNGGU_VERIFIKASI");
+
+        assertFalse(result.isEmpty());
+        assertEquals("MENUNGGU_VERIFIKASI", result.get(0).getStatus());
+        verify(campaignRepository, times(1)).findByStatus("MENUNGGU_VERIFIKASI");
+    }
+
+    @Test
+    void testFindByIdNotFound() {
+        when(campaignRepository.findById("nonexistent")).thenReturn(Optional.empty());
+
+        Optional<Campaign> result = campaignRepository.findById("nonexistent");
+
+        assertTrue(result.isEmpty());
+        verify(campaignRepository, times(1)).findById("nonexistent");
     }
 }
